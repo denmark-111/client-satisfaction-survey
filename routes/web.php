@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SurveyController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,3 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/', [SurveyController::class, 'create'])->name('survey.create');
+Route::post('/survey', [SurveyController::class, 'store'])->name('survey.store');
+Route::get('/survey/confirmation', [SurveyController::class, 'confirmation'])->name('survey.confirmation');
