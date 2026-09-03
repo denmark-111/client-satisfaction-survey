@@ -16,8 +16,8 @@ use App\Http\Controllers\SurveyController;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('landing');
 
-Route::get('/', [SurveyController::class, 'create'])->name('survey.create');
+Route::get('/survey', [SurveyController::class, 'create'])->name('survey.create');
 Route::post('/survey', [SurveyController::class, 'store'])->name('survey.store');
 Route::get('/survey/confirmation', [SurveyController::class, 'confirmation'])->name('survey.confirmation');

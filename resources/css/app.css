@@ -981,3 +981,170 @@ table.sqd-table input {
         padding: 20px;
     }
 }
+
+/* Reference-Matching Landing Page Styles */
+.landing-body {
+    min-height: 100vh;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Baloo 2', 'Nunito Sans', -apple-system, sans-serif;
+}
+
+.landing-stage {
+    position: relative;
+    z-index: 2;
+    width: 100vw;
+    height: 100vh;
+    max-width: 1500px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    padding: clamp(20px, 3.5vh, 40px) clamp(24px, 4vw, 60px);
+}
+
+.landing-header-lockup {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: fit-content;
+    max-width: min(94vw, 1050px);
+}
+
+.nda-logo-img {
+    width: clamp(75px, 8.5vw, 120px);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+    margin-bottom: clamp(6px, 1.2vh, 12px);
+}
+
+.landing-title-block {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.landing-title-client {
+    font-family: 'Baloo 2', 'Arial Black', -apple-system, sans-serif;
+    font-size: clamp(4rem, 12.5vw, 9.6rem);
+    font-weight: 900;
+    color: #11692c;
+    line-height: 0.86;
+    margin: 0;
+    padding: 0;
+    letter-spacing: -0.01em;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 3px 12px rgba(17, 105, 44, 0.12);
+    text-align: right;
+    width: 100%;
+}
+
+.landing-title-survey {
+    font-family: 'Baloo 2', 'Arial Black', -apple-system, sans-serif;
+    font-size: clamp(1.35rem, 4.2vw, 3.4rem);
+    font-weight: 900;
+    color: #11692c;
+    line-height: 1;
+    margin: 6px 0 0 0;
+    padding: 0;
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 8px rgba(17, 105, 44, 0.1);
+    text-align: left;
+    width: 100%;
+}
+
+.landing-cta-container {
+    position: absolute;
+    top: 63%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    text-align: center;
+    width: auto;
+}
+
+.take-survey-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(240, 248, 233, 0.94) 0%, rgba(212, 234, 200, 0.90) 100%);
+    border: 1.8px solid rgba(40, 75, 35, 0.45);
+    border-radius: 9999px;
+    padding: 14px 52px;
+    font-family: 'Baloo 2', 'Arial Black', sans-serif;
+    font-size: clamp(1.15rem, 2.3vw, 1.65rem);
+    font-weight: 900;
+    color: #111e13;
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 8px 24px rgba(18, 55, 20, 0.22), inset 0 1.5px 0 rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.take-survey-pill-btn:hover {
+    background: linear-gradient(180deg, #ffffff 0%, rgba(226, 244, 216, 0.98) 100%);
+    border-color: #11692c;
+    color: #11692c;
+    transform: translateY(-4px) scale(1.04);
+    box-shadow: 0 14px 30px rgba(17, 105, 44, 0.35), inset 0 2px 0 #ffffff;
+}
+
+.take-survey-pill-btn:active {
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 4px 14px rgba(17, 105, 44, 0.25);
+}
+
+@media (max-width: 640px) {
+    .landing-stage {
+        padding: 20px 16px;
+    }
+
+    .landing-header-lockup {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .nda-logo-img {
+        width: 60px;
+        margin-bottom: 6px;
+    }
+
+    .landing-title-client {
+        font-size: clamp(2.8rem, 14vw, 5rem);
+    }
+
+    .landing-title-survey {
+        font-size: clamp(1rem, 5vw, 1.85rem);
+    }
+
+    .landing-cta-container {
+        top: 60%;
+        width: 85%;
+        max-width: 320px;
+    }
+
+    .take-survey-pill-btn {
+        width: 100%;
+        padding: 14px 20px;
+        font-size: 1.15rem;
+    }
+}
+
+
+
+
+
+
+
