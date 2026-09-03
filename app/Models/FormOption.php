@@ -5,8 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-use Illuminate\Database\Eloquent\Builder;
-
 class FormOption extends Model
 {
     protected $fillable = [
@@ -22,12 +20,12 @@ class FormOption extends Model
         'sort_order' => 'integer',
     ];
 
-    public function scopeActive(Builder $query): Builder
+    public function scopeActive(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
     {
         return $query->where('is_active', true);
     }
 
-    public function scopeCategory(Builder $query, string $category): Builder
+    public function scopeCategory(\Illuminate\Database\Eloquent\Builder $query, string $category): \Illuminate\Database\Eloquent\Builder
     {
         return $query->active()->where('category', $category)->orderBy('sort_order')->orderBy('label');
     }

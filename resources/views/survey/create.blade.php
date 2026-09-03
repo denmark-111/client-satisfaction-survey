@@ -4,49 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National Dairy Authority - Client Satisfaction Survey</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-        body { background-color: #f0f4f1; color: #202124; padding: 20px 10px; }
-        .container { max-width: 680px; margin: 0 auto; }
-        .card { background: #fff; border-radius: 8px; border: 1px solid #dadce0; margin-bottom: 16px; overflow: hidden; }
-        .card-header-banner { background-color: #1b5e20; height: 10px; }
-        .card-content { padding: 22px; }
-        .agency-header { text-align: center; margin-bottom: 12px; }
-        .agency-title { font-size: 18px; font-weight: 700; color: #1b5e20; text-transform: uppercase; }
-        .agency-subtitle { font-size: 13px; color: #5f6368; margin-bottom: 8px; }
-        .survey-title { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
-        .survey-desc { font-size: 13px; color: #444; line-height: 1.45; }
-        .section-banner { background-color: #1b5e20; color: #fff; font-weight: 600; font-size: 16px; padding: 12px 20px; }
-        .form-group { margin-bottom: 16px; }
-        .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
-        .required { color: #d93025; }
-        .hint { font-size: 12px; color: #5f6368; margin-top: 4px; }
-        input[type="text"], input[type="number"], input[type="date"], select, textarea {
-            width: 100%; padding: 10px 12px; border: 1px solid #dadce0; border-radius: 4px; font-size: 14px; outline: none; background: #fff;
-        }
-        input:focus, select:focus, textarea:focus { border-color: #1b5e20; box-shadow: 0 0 0 1px #1b5e20; }
-        .radio-group, .checkbox-group { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
-        .radio-option, .checkbox-option { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
-        .rating-scale { display: flex; justify-content: space-between; align-items: center; margin: 16px 0 8px; }
-        .rating-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; }
-        .scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: #5f6368; margin-top: 4px; }
-        .table-responsive { overflow-x: auto; margin-top: 12px; }
-        table.sqd-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        table.sqd-table th, table.sqd-table td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #e0e0e0; }
-        table.sqd-table th:first-child, table.sqd-table td:first-child { text-align: left; width: 45%; }
-        table.sqd-table th { background-color: #fafafa; font-weight: 600; color: #444; font-size: 12px; }
-        .form-step { display: none; }
-        .form-step.active { display: block; }
-        .btn-row { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        .btn { padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: 500; cursor: pointer; border: none; }
-        .btn-primary { background-color: #1b5e20; color: #fff; }
-        .btn-secondary { background-color: #fff; color: #1b5e20; border: 1px solid #dadce0; }
-        .btn:hover { opacity: 0.9; }
-        .error-msg { color: #d93025; font-size: 12px; margin-top: 4px; }
-        .errors-summary { background-color: #fdecea; color: #b71c1c; border-radius: 4px; padding: 12px 16px; margin-bottom: 16px; font-size: 14px; }
-    </style>
+    @vite(['resources/css/app.css'])
 </head>
 <body>
+<video class="background-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="{{ asset('grass-field.mp4') }}" type="video/mp4">
+</video>
 <div class="container">
 
     @if ($errors->any())
@@ -218,31 +181,55 @@
         </div>
 
         <!-- STEP 5: Overall Satisfaction -->
-        <div class="form-step" data-step="5">
-            <div class="card">
-                <div class="section-banner">Overall Satisfaction to the Services of NDA</div>
-                <div class="card-content">
-                    <p class="hint" style="margin-bottom: 14px;">
-                        Please rate your overall satisfaction from 1 to 10, where "1" means Very Dissatisfied and "10" means Very Satisfied.
-                    </p>
+        <div class="form-step satisfaction-step" data-step="5">
+            <div class="satisfaction-shell">
+                <div class="satisfaction-header">Overall Satisfaction to the Services of NDA</div>
+                <div class="satisfaction-intro">
+                    <p>Please rate your overall satisfaction for the services provided by NDA in 2024.</p>
+                    <p>Please use this rating scale below from 1 to 10, where a rating of "1" or close to 1 means that you are Very Dissatisfied with the service provision of NDA and a rating of "10" or close to 10 means that you are Very Satisfied.</p>
+                </div>
 
-                    <label class="form-label">Overall Satisfaction <span class="required">*</span></label>
-                    <div class="rating-scale">
-                        @for($i = 1; $i <= 10; $i++)
-                            <label class="rating-item">
-                                <span>{{ $i }}</span>
-                                <input type="radio" name="overall_satisfaction" value="{{ $i }}" {{ old('overall_satisfaction') == $i ? 'checked' : '' }} required>
-                            </label>
-                        @endfor
-                    </div>
-                    <div class="scale-labels">
-                        <span>Very Dissatisfied</span>
-                        <span>Very Satisfied</span>
+                <div class="satisfaction-grid">
+                    <div class="satisfaction-panel rating-panel">
+                        <div class="panel-title">OVERALL SATISFACTION</div>
+                        <div class="rating-box">
+                            @php($satisfactionRating = (int) old('overall_satisfaction', 5))
+                            <div class="satisfaction-meter" data-satisfaction-meter>
+                                <div class="meter-scale">
+                                    <span class="scale-caption top">VERY<br>SATISFIED</span>
+                                    <div class="scale-track">
+                                        <div class="slider-wrap">
+                                            <input class="satisfaction-range" type="range" min="1" max="10" step="1" value="{{ $satisfactionRating }}" aria-label="Drag to choose satisfaction rating">
+                                        </div>
+                                        <div class="scale-ticks" aria-label="Satisfaction rating choices">
+                                            @for($i = 10; $i >= 1; $i--)
+                                                <label class="scale-tick {{ $satisfactionRating === $i ? 'active' : '' }}">
+                                                    <input type="radio" name="overall_satisfaction" value="{{ $i }}" {{ $satisfactionRating === $i ? 'checked' : '' }} required>
+                                                    <span>{{ $i }}</span>
+                                                </label>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                    <span class="scale-caption bottom">VERY<br>DISSATISFIED</span>
+                                </div>
+
+                                <div class="milk-bottle-wrap" aria-live="polite">
+                                    <div class="milk-bottle">
+                                        <div class="milk-fill" style="height: {{ $satisfactionRating * 10 }}%;"></div>
+                                    </div>
+                                    <svg class="milk-bottle-outline" viewBox="0 0 104 230" aria-hidden="true" focusable="false">
+                                        <path d="M40 2h24v23c0 4 4 7 11 11 8 5 13 10 13 19v151c0 10-7 18-16 20H32c-9-2-16-10-16-20V55c0-9 5-14 13-19 7-4 11-7 11-11V2Z" />
+                                    </svg>
+                                    <div class="milk-bottle-label"><span data-rating-value>{{ $satisfactionRating }}</span>/10</div>
+                                    <div class="milk-bottle-cap"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 24px;">
-                        <label class="form-label">Remarks</label>
-                        <textarea name="remarks" rows="3" placeholder="Your answer">{{ old('remarks') }}</textarea>
+                    <div class="satisfaction-panel remarks-panel">
+                        <div class="panel-title">REMARKS</div>
+                        <textarea name="remarks" rows="6" placeholder="Your answer">{{ old('remarks') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -318,21 +305,17 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $sqds = [
-                                        'sqd0_overall' => 'SQD0. I am satisfied with the service I availed.',
-                                        'sqd1_responsiveness' => 'SQD1. I spent an acceptable amount of time to complete my transaction (Responsiveness)',
-                                        'sqd2_reliability' => 'SQD2. The office accurately informed and followed the transaction\'s requirements and steps (Reliability)',
-                                        'sqd3_access_facilities' => 'SQD3. My online transaction (including steps and payment) was simple and convenient (Access and Facilities)',
-                                        'sqd4_communication' => 'SQD4. I easily found information about my transaction from the office or its website (Communication)',
-                                        'sqd5_costs' => 'SQD5. I paid an acceptable amount of fees for my transaction (Costs)',
-                                        'sqd6_integrity' => 'SQD6. I am confident my online transaction was secure (Integrity)',
-                                        'sqd7_assurance' => 'SQD7. The office\'s online support was available, or (if asked questions) online support was quick to respond (Assurance)',
-                                        'sqd8_outcome' => 'SQD8. I got what I needed from the government office (Outcome)'
-                                    ];
-                                @endphp
-
-                                @foreach($sqds as $field => $text)
+                                @foreach([
+                                    'sqd0_overall' => 'SQD0. I am satisfied with the service I availed.',
+                                    'sqd1_responsiveness' => 'SQD1. I spent an acceptable amount of time to complete my transaction (Responsiveness)',
+                                    'sqd2_reliability' => 'SQD2. The office accurately informed and followed the transaction\'s requirements and steps (Reliability)',
+                                    'sqd3_access_facilities' => 'SQD3. My online transaction (including steps and payment) was simple and convenient (Access and Facilities)',
+                                    'sqd4_communication' => 'SQD4. I easily found information about my transaction from the office or its website (Communication)',
+                                    'sqd5_costs' => 'SQD5. I paid an acceptable amount of fees for my transaction (Costs)',
+                                    'sqd6_integrity' => 'SQD6. I am confident my online transaction was secure (Integrity)',
+                                    'sqd7_assurance' => 'SQD7. The office\'s online support was available, or (if asked questions) online support was quick to respond (Assurance)',
+                                    'sqd8_outcome' => 'SQD8. I got what I needed from the government office (Outcome)'
+                                ] as $field => $text)
                                     <tr>
                                         <td>{{ $text }} <span class="required">*</span></td>
                                         @foreach([5, 4, 3, 2, 1, 0] as $rating)
@@ -350,7 +333,7 @@
 
             <div class="btn-row">
                 <button type="button" class="btn btn-secondary" onclick="prevStep(6)">Back</button>
-                <button type="submit" class="btn btn-primary" style="background-color: #0b8043;">Submit</button>
+                <button type="submit" class="btn btn-primary">Submit</button>
             </div>
         </div>
     </form>
@@ -360,12 +343,44 @@
     let currentStep = 1;
     const totalSteps = 7;
 
+    document.querySelectorAll('[data-satisfaction-meter]').forEach(meter => {
+        const range = meter.querySelector('.satisfaction-range');
+        const radios = meter.querySelectorAll('input[name="overall_satisfaction"]');
+        const fill = meter.querySelector('.milk-fill');
+        const valueLabel = meter.querySelector('[data-rating-value]');
+        const ticks = meter.querySelectorAll('.scale-tick');
+
+        function updateSatisfactionMeter(value) {
+            const rating = Number(value);
+            range.value = rating;
+            fill.style.height = `${rating * 10}%`;
+            valueLabel.textContent = rating;
+
+            radios.forEach(radio => {
+                radio.checked = Number(radio.value) === rating;
+                radio.closest('.scale-tick').classList.toggle('active', radio.checked);
+            });
+        }
+
+        range.addEventListener('input', event => updateSatisfactionMeter(event.target.value));
+        radios.forEach(radio => radio.addEventListener('change', event => updateSatisfactionMeter(event.target.value)));
+        updateSatisfactionMeter(range.value);
+    });
+
     function showStep(step) {
         document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
         const target = document.querySelector(`.form-step[data-step="${step}"]`);
         if (target) {
             target.classList.add('active');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const container = document.querySelector('.container');
+            if (container) {
+                const targetTop = target.offsetTop;
+                container.scrollTo({
+                    top: targetTop - 20,
+                    behavior: 'smooth'
+                });
+            }
         }
     }
 
