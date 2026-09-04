@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Response Recorded - Client Satisfaction Survey</title>
+    @vite(['resources/css/app.css'])
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
         body { background-color: #f0f4f1; color: #202124; padding: 40px 10px; }
@@ -24,6 +25,9 @@
     </style>
 </head>
 <body>
+<video class="background-video" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+    <source src="{{ asset('grass-field.mp4') }}" type="video/mp4">
+</video>
 <div class="container">
     <div class="card">
         <div class="card-header-banner"></div>
