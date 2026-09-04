@@ -24,6 +24,11 @@ class SurveyController extends Controller
         $validated = $request->validated();
         $validated['agreed_to_participate'] = true;
 
+        if ((int) ($validated['cc1_awareness'] ?? 0) === 4) {
+            $validated['cc2_visibility'] = null;
+            $validated['cc3_helpfulness'] = null;
+        }
+
         Survey::create($validated);
 
         return redirect()->route('survey.confirmation');

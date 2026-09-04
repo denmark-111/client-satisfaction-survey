@@ -342,6 +342,10 @@ body::before {
     box-shadow: inset 0 0 0 1px rgba(27, 94, 32, 0.08);
 }
 
+.form-step[data-step="6"] .form-group.hidden-group {
+    display: none;
+}
+
 .form-step[data-step="6"] .btn-row {
     margin-top: 18px;
 }
