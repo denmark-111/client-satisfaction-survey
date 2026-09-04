@@ -256,9 +256,9 @@
                     </div>
 
                     <div class="form-group {{ old('cc1_awareness') == 4 ? 'hidden-group' : '' }}" id="cc2-group" style="{{ old('cc1_awareness') == 4 ? 'display: none;' : '' }}">
-                        <label class="form-label">CC2. If aware of CC (answered 1-3 in CC1), would you say that the CC of this office was...?</label>
+                        <label class="form-label">CC2. If aware of CC (answered 1-3 in CC1), would you say that the CC of this office was...? <span class="required" id="cc2-required-indicator" style="display: {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'inline' : 'none' }};">*</span></label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="1" {{ old('cc2_visibility') == 1 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 1. Easy to see</label>
+                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="1" {{ old('cc2_visibility') == 1 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }} {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'required' : '' }}> 1. Easy to see</label>
                             <label class="radio-option"><input type="radio" name="cc2_visibility" value="2" {{ old('cc2_visibility') == 2 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 2. Somewhat easy to see</label>
                             <label class="radio-option"><input type="radio" name="cc2_visibility" value="3" {{ old('cc2_visibility') == 3 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 3. Difficult to see</label>
                             <label class="radio-option"><input type="radio" name="cc2_visibility" value="4" {{ old('cc2_visibility') == 4 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 4. Not visible at all</label>
@@ -267,9 +267,9 @@
                     </div>
 
                     <div class="form-group {{ old('cc1_awareness') == 4 ? 'hidden-group' : '' }}" id="cc3-group" style="{{ old('cc1_awareness') == 4 ? 'display: none;' : '' }}">
-                        <label class="form-label">CC3. If aware of CC (answered 1-3 in CC1), how much did the CC help you in your transaction?</label>
+                        <label class="form-label">CC3. If aware of CC (answered 1-3 in CC1), how much did the CC help you in your transaction? <span class="required" id="cc3-required-indicator" style="display: {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'inline' : 'none' }};">*</span></label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="1" {{ old('cc3_helpfulness') == 1 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 1. Helped me very much</label>
+                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="1" {{ old('cc3_helpfulness') == 1 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }} {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'required' : '' }}> 1. Helped me very much</label>
                             <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="2" {{ old('cc3_helpfulness') == 2 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 2. Somewhat helpful</label>
                             <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="3" {{ old('cc3_helpfulness') == 3 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 3. Did not help</label>
                             <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="4" {{ old('cc3_helpfulness') == 4 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 4. N/A</label>
@@ -384,10 +384,14 @@
 
     function updateCcState() {
         const selectedCc1 = document.querySelector('input[name="cc1_awareness"]:checked');
-        const isCc1Option4 = selectedCc1 && selectedCc1.value === '4';
+        const cc1Val = selectedCc1 ? selectedCc1.value : null;
+        const isCc1Aware = cc1Val === '1' || cc1Val === '2' || cc1Val === '3';
+        const isCc1Option4 = cc1Val === '4';
 
         const cc2Group = document.getElementById('cc2-group');
         const cc3Group = document.getElementById('cc3-group');
+        const cc2Indicator = document.getElementById('cc2-required-indicator');
+        const cc3Indicator = document.getElementById('cc3-required-indicator');
         const cc2Radios = document.querySelectorAll('input[name="cc2_visibility"]');
         const cc3Radios = document.querySelectorAll('input[name="cc3_helpfulness"]');
 
@@ -400,8 +404,16 @@
             cc3Group.classList.toggle('hidden-group', !!isCc1Option4);
         }
 
+        if (cc2Indicator) {
+            cc2Indicator.style.display = isCc1Aware ? 'inline' : 'none';
+        }
+        if (cc3Indicator) {
+            cc3Indicator.style.display = isCc1Aware ? 'inline' : 'none';
+        }
+
         cc2Radios.forEach(radio => {
             radio.disabled = !!isCc1Option4;
+            radio.required = !!isCc1Aware;
             if (isCc1Option4) {
                 radio.checked = false;
             }
@@ -409,6 +421,7 @@
 
         cc3Radios.forEach(radio => {
             radio.disabled = !!isCc1Option4;
+            radio.required = !!isCc1Aware;
             if (isCc1Option4) {
                 radio.checked = false;
             }

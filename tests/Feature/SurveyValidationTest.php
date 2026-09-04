@@ -156,6 +156,46 @@ class SurveyValidationTest extends TestCase
         ]);
     }
 
+    public function test_when_cc1_is_1_to_3_cc2_and_cc3_are_required(): void
+    {
+        foreach ([1, 2, 3] as $option) {
+            $dataMissingCc2 = $this->validSurveyData([
+                'cc1_awareness' => $option,
+                'cc2_visibility' => null,
+                'cc3_helpfulness' => 1,
+            ]);
+            $response = $this->post(route('survey.store'), $dataMissingCc2);
+            $response->assertSessionHasErrors(['cc2_visibility']);
+
+            $dataMissingCc3 = $this->validSurveyData([
+                'cc1_awareness' => $option,
+                'cc2_visibility' => 1,
+                'cc3_helpfulness' => null,
+            ]);
+            $response = $this->post(route('survey.store'), $dataMissingCc3);
+            $response->assertSessionHasErrors(['cc3_helpfulness']);
+        }
+    }
+
+    public function test_when_cc1_is_1_to_3_and_cc2_cc3_provided_survey_is_saved(): void
+    {
+        $data = $this->validSurveyData([
+            'cc1_awareness' => 2,
+            'cc2_visibility' => 3,
+            'cc3_helpfulness' => 2,
+        ]);
+
+        $response = $this->post(route('survey.store'), $data);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('survey.confirmation'));
+
+        $this->assertDatabaseHas('surveys', [
+            'cc1_awareness' => 2,
+            'cc2_visibility' => 3,
+            'cc3_helpfulness' => 2,
+        ]);
+    }
+
     public function test_confirmation_page_renders_successfully(): void
     {
         $response = $this->get(route('survey.confirmation'));

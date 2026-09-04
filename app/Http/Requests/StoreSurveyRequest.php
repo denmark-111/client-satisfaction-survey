@@ -43,14 +43,16 @@ class StoreSurveyRequest extends FormRequest
             ],
             'cc1_awareness' => ['required', 'integer', 'between:1,4'],
             'cc2_visibility' => [
-                'nullable',
+                'required_if:cc1_awareness,1,2,3',
                 Rule::prohibitedIf(fn () => (int) $this->input('cc1_awareness') === 4),
+                'nullable',
                 'integer',
                 'between:1,5',
             ],
             'cc3_helpfulness' => [
-                'nullable',
+                'required_if:cc1_awareness,1,2,3',
                 Rule::prohibitedIf(fn () => (int) $this->input('cc1_awareness') === 4),
+                'nullable',
                 'integer',
                 'between:1,4',
             ],
@@ -77,7 +79,9 @@ class StoreSurveyRequest extends FormRequest
             'remarks.required' => 'Remarks is required when the overall rating is 3 and below.',
             'remarks.required_if' => 'Remarks is required when the overall rating is 3 and below.',
             'date_service_availed.before_or_equal' => 'Date Service Availed cannot be a future date.',
+            'cc2_visibility.required_if' => 'CC2 is required when aware of Citizen\'s Charter.',
             'cc2_visibility.prohibited' => 'CC2 should not be answered when CC1 option 4 is selected.',
+            'cc3_helpfulness.required_if' => 'CC3 is required when aware of Citizen\'s Charter.',
             'cc3_helpfulness.prohibited' => 'CC3 should not be answered when CC1 option 4 is selected.',
         ];
     }
