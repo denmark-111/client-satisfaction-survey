@@ -48,7 +48,7 @@
                 <div class="card-content">
                     <label class="form-label">Do you agree to participate as a respondent in this survey? <span class="required">*</span></label>
                     <label class="checkbox-option">
-                        <input type="checkbox" name="agreed_to_participate" value="1" {{ old('agreed_to_participate', 1) ? 'checked' : '' }} required>
+                        <input type="checkbox" name="agreed_to_participate" value="1" {{ old('agreed_to_participate') ? 'checked' : '' }} required>
                         I agree to participate in this survey
                     </label>
                 </div>
@@ -194,12 +194,13 @@
                         <div class="panel-title">OVERALL SATISFACTION</div>
                         <div class="rating-box">
                             @php($satisfactionRating = (int) old('overall_satisfaction', 5))
+                            @php($sliderFillPercent = (($satisfactionRating - 1) / 9) * 100)
                             <div class="satisfaction-meter" data-satisfaction-meter>
                                 <div class="meter-scale">
                                     <span class="scale-caption top">VERY<br>SATISFIED</span>
                                     <div class="scale-track">
                                         <div class="slider-wrap">
-                                            <input class="satisfaction-range" type="range" min="1" max="10" step="1" value="{{ $satisfactionRating }}" aria-label="Drag to choose satisfaction rating">
+                                            <input class="satisfaction-range" type="range" min="1" max="10" step="1" value="{{ $satisfactionRating }}" style="--slider-fill: {{ $sliderFillPercent }}%;" aria-label="Drag to choose satisfaction rating">
                                         </div>
                                         <div class="scale-ticks" aria-label="Satisfaction rating choices">
                                             @for($i = 10; $i >= 1; $i--)
@@ -229,6 +230,7 @@
 
                     <div class="satisfaction-panel remarks-panel">
                         <div class="panel-title">REMARKS <span id="remarks-required-indicator" class="required" style="display: {{ (int) old('overall_satisfaction', 5) <= 3 ? 'inline' : 'none' }};">*</span></div>
+                        <p class="remarks-required-note" id="remarks-required-note" style="display: {{ (int) old('overall_satisfaction', 5) <= 3 ? 'block' : 'none' }};">Please let us know how we can improve our services.</p>
                         <textarea name="remarks" id="remarks" rows="6" placeholder="Your answer" {{ (int) old('overall_satisfaction', 5) <= 3 ? 'required' : '' }}>{{ old('remarks') }}</textarea>
                     </div>
                 </div>
@@ -255,24 +257,25 @@
                         </div>
                     </div>
 
-                    <div class="form-group {{ old('cc1_awareness') == 4 ? 'hidden-group' : '' }}" id="cc2-group" style="{{ old('cc1_awareness') == 4 ? 'display: none;' : '' }}">
-                        <label class="form-label">CC2. If aware of CC (answered 1-3 in CC1), would you say that the CC of this office was...? <span class="required" id="cc2-required-indicator" style="display: {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'inline' : 'none' }};">*</span></label>
+                    @php($isCcAware = in_array((int) old('cc1_awareness'), [1, 2, 3], true))
+                    <div class="form-group {{ !$isCcAware ? 'hidden-group' : '' }}" id="cc2-group" style="{{ !$isCcAware ? 'display: none;' : '' }}">
+                        <label class="form-label">CC2. If aware of CC (answered 1-3 in CC1), would you say that the CC of this office was...? <span class="required" id="cc2-required-indicator" style="display: {{ $isCcAware ? 'inline' : 'none' }};">*</span></label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="1" {{ old('cc2_visibility') == 1 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }} {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'required' : '' }}> 1. Easy to see</label>
-                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="2" {{ old('cc2_visibility') == 2 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 2. Somewhat easy to see</label>
-                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="3" {{ old('cc2_visibility') == 3 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 3. Difficult to see</label>
-                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="4" {{ old('cc2_visibility') == 4 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 4. Not visible at all</label>
-                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="5" {{ old('cc2_visibility') == 5 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 5. N/A</label>
+                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="1" {{ old('cc2_visibility') == 1 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 1. Easy to see</label>
+                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="2" {{ old('cc2_visibility') == 2 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 2. Somewhat easy to see</label>
+                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="3" {{ old('cc2_visibility') == 3 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 3. Difficult to see</label>
+                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="4" {{ old('cc2_visibility') == 4 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 4. Not visible at all</label>
+                            <label class="radio-option"><input type="radio" name="cc2_visibility" value="5" {{ old('cc2_visibility') == 5 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 5. N/A</label>
                         </div>
                     </div>
 
-                    <div class="form-group {{ old('cc1_awareness') == 4 ? 'hidden-group' : '' }}" id="cc3-group" style="{{ old('cc1_awareness') == 4 ? 'display: none;' : '' }}">
-                        <label class="form-label">CC3. If aware of CC (answered 1-3 in CC1), how much did the CC help you in your transaction? <span class="required" id="cc3-required-indicator" style="display: {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'inline' : 'none' }};">*</span></label>
+                    <div class="form-group {{ !$isCcAware ? 'hidden-group' : '' }}" id="cc3-group" style="{{ !$isCcAware ? 'display: none;' : '' }}">
+                        <label class="form-label">CC3. If aware of CC (answered 1-3 in CC1), how much did the CC help you in your transaction? <span class="required" id="cc3-required-indicator" style="display: {{ $isCcAware ? 'inline' : 'none' }};">*</span></label>
                         <div class="radio-group">
-                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="1" {{ old('cc3_helpfulness') == 1 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }} {{ in_array(old('cc1_awareness'), [1, 2, 3]) ? 'required' : '' }}> 1. Helped me very much</label>
-                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="2" {{ old('cc3_helpfulness') == 2 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 2. Somewhat helpful</label>
-                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="3" {{ old('cc3_helpfulness') == 3 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 3. Did not help</label>
-                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="4" {{ old('cc3_helpfulness') == 4 ? 'checked' : '' }} {{ old('cc1_awareness') == 4 ? 'disabled' : '' }}> 4. N/A</label>
+                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="1" {{ old('cc3_helpfulness') == 1 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 1. Helped me very much</label>
+                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="2" {{ old('cc3_helpfulness') == 2 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 2. Somewhat helpful</label>
+                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="3" {{ old('cc3_helpfulness') == 3 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 3. Did not help</label>
+                            <label class="radio-option"><input type="radio" name="cc3_helpfulness" value="4" {{ old('cc3_helpfulness') == 4 ? 'checked' : '' }} {{ !$isCcAware ? 'disabled' : '' }} {{ $isCcAware ? 'required' : '' }}> 4. N/A</label>
                         </div>
                     </div>
                 </div>
@@ -346,6 +349,7 @@
     function updateRemarksRequirement(rating) {
         const remarksTextarea = document.querySelector('textarea[name="remarks"]');
         const remarksIndicator = document.getElementById('remarks-required-indicator');
+        const remarksNote = document.getElementById('remarks-required-note');
         const isRequired = Number(rating) <= 3;
 
         if (remarksTextarea) {
@@ -353,6 +357,9 @@
         }
         if (remarksIndicator) {
             remarksIndicator.style.display = isRequired ? 'inline' : 'none';
+        }
+        if (remarksNote) {
+            remarksNote.style.display = isRequired ? 'block' : 'none';
         }
     }
 
@@ -402,6 +409,10 @@
 
         function updateSatisfactionMeter(value) {
             const rating = Number(value);
+            const min = Number(range.min) || 1;
+            const max = Number(range.max) || 10;
+            const pct = ((rating - min) / (max - min)) * 100;
+            range.style.setProperty('--slider-fill', `${pct}%`);
             range.value = rating;
             fill.style.height = `${rating * 10}%`;
             valueLabel.textContent = rating;
@@ -424,7 +435,6 @@
         const selectedCc1 = document.querySelector('input[name="cc1_awareness"]:checked');
         const cc1Val = selectedCc1 ? selectedCc1.value : null;
         const isCc1Aware = cc1Val === '1' || cc1Val === '2' || cc1Val === '3';
-        const isCc1Option4 = cc1Val === '4';
 
         const cc2Group = document.getElementById('cc2-group');
         const cc3Group = document.getElementById('cc3-group');
@@ -434,12 +444,12 @@
         const cc3Radios = document.querySelectorAll('input[name="cc3_helpfulness"]');
 
         if (cc2Group) {
-            cc2Group.style.display = isCc1Option4 ? 'none' : '';
-            cc2Group.classList.toggle('hidden-group', !!isCc1Option4);
+            cc2Group.style.display = isCc1Aware ? '' : 'none';
+            cc2Group.classList.toggle('hidden-group', !isCc1Aware);
         }
         if (cc3Group) {
-            cc3Group.style.display = isCc1Option4 ? 'none' : '';
-            cc3Group.classList.toggle('hidden-group', !!isCc1Option4);
+            cc3Group.style.display = isCc1Aware ? '' : 'none';
+            cc3Group.classList.toggle('hidden-group', !isCc1Aware);
         }
 
         if (cc2Indicator) {
@@ -450,17 +460,17 @@
         }
 
         cc2Radios.forEach(radio => {
-            radio.disabled = !!isCc1Option4;
-            radio.required = !!isCc1Aware;
-            if (isCc1Option4) {
+            radio.disabled = !isCc1Aware;
+            radio.required = isCc1Aware;
+            if (!isCc1Aware) {
                 radio.checked = false;
             }
         });
 
         cc3Radios.forEach(radio => {
-            radio.disabled = !!isCc1Option4;
-            radio.required = !!isCc1Aware;
-            if (isCc1Option4) {
+            radio.disabled = !isCc1Aware;
+            radio.required = isCc1Aware;
+            if (!isCc1Aware) {
                 radio.checked = false;
             }
         });
@@ -504,6 +514,7 @@
         const requiredInputs = activeContainer.querySelectorAll('[required]');
         
         for (let input of requiredInputs) {
+            if (input.disabled) continue;
             if (input.type === 'radio') {
                 const checked = activeContainer.querySelector(`input[name="${input.name}"]:checked`);
                 if (!checked) {

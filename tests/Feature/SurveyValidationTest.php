@@ -204,4 +204,23 @@ class SurveyValidationTest extends TestCase
         $response->assertSee('Your response has been recorded.');
         $response->assertSee('Submit another response');
     }
+
+    public function test_survey_create_page_renders_with_unchecked_agreement_and_hidden_cc2_cc3(): void
+    {
+        $response = $this->get(route('survey.create'));
+        $response->assertStatus(200);
+        $response->assertDontSee('name="agreed_to_participate" value="1" checked', false);
+        $response->assertSee('id="cc2-group" style="display: none;"', false);
+        $response->assertSee('id="cc3-group" style="display: none;"', false);
+    }
+
+    public function test_agreed_to_participate_is_required(): void
+    {
+        $data = $this->validSurveyData([
+            'agreed_to_participate' => null,
+        ]);
+
+        $response = $this->post(route('survey.store'), $data);
+        $response->assertSessionHasErrors(['agreed_to_participate']);
+    }
 }

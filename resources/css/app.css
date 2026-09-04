@@ -670,6 +670,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 .satisfaction-range {
+    --slider-fill: 44.44%;
     position: absolute;
     top: 50%;
     left: 50%;
@@ -679,6 +680,7 @@ input:focus, select:focus, textarea:focus {
     transform: translate(-50%, -50%) rotate(-90deg);
     transform-origin: center;
     appearance: none;
+    -webkit-appearance: none;
     background: transparent;
     cursor: grab;
 }
@@ -688,7 +690,7 @@ input:focus, select:focus, textarea:focus {
 .satisfaction-range::-webkit-slider-runnable-track {
     height: 7px;
     border-radius: 999px;
-    background: #d7ecd0;
+    background: linear-gradient(to right, var(--brand) 0%, var(--brand) var(--slider-fill, 44.44%), #d7ecd0 var(--slider-fill, 44.44%), #d7ecd0 100%);
 }
 
 .satisfaction-range::-webkit-slider-thumb {
@@ -696,6 +698,7 @@ input:focus, select:focus, textarea:focus {
     height: 22px;
     margin-top: -7px;
     appearance: none;
+    -webkit-appearance: none;
     border: 3px solid #fff;
     border-radius: 50%;
     background: var(--brand);
@@ -705,7 +708,13 @@ input:focus, select:focus, textarea:focus {
 .satisfaction-range::-moz-range-track {
     height: 7px;
     border-radius: 999px;
-    background: #d7ecd0;
+    background: linear-gradient(to right, var(--brand) 0%, var(--brand) var(--slider-fill, 44.44%), #d7ecd0 var(--slider-fill, 44.44%), #d7ecd0 100%);
+}
+
+.satisfaction-range::-moz-range-progress {
+    height: 7px;
+    border-radius: 999px;
+    background: var(--brand);
 }
 
 .satisfaction-range::-moz-range-thumb {
@@ -807,6 +816,15 @@ input:focus, select:focus, textarea:focus {
 .remarks-panel {
     display: flex;
     flex-direction: column;
+}
+
+.remarks-required-note {
+    font-size: 0.85rem;
+    color: #3b5338;
+    margin-top: -6px;
+    margin-bottom: 12px;
+    line-height: 1.45;
+    font-weight: 600;
 }
 
 .remarks-panel textarea {
