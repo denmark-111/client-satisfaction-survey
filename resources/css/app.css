@@ -819,10 +819,10 @@ input:focus, select:focus, textarea:focus {
 }
 
 .remarks-required-note {
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     color: #3b5338;
-    margin-top: -6px;
-    margin-bottom: 12px;
+    margin-top: 10px;
+    margin-bottom: 2px;
     line-height: 1.45;
     font-weight: 600;
 }

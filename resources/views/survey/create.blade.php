@@ -230,8 +230,8 @@
 
                     <div class="satisfaction-panel remarks-panel">
                         <div class="panel-title">REMARKS <span id="remarks-required-indicator" class="required" style="display: {{ (int) old('overall_satisfaction', 5) <= 3 ? 'inline' : 'none' }};">*</span></div>
-                        <p class="remarks-required-note" id="remarks-required-note" style="display: {{ (int) old('overall_satisfaction', 5) <= 3 ? 'block' : 'none' }};">Please let us know how we can improve our services.</p>
                         <textarea name="remarks" id="remarks" rows="6" placeholder="Your answer" {{ (int) old('overall_satisfaction', 5) <= 3 ? 'required' : '' }}>{{ old('remarks') }}</textarea>
+                        <p class="remarks-required-note" id="remarks-required-note" style="display: {{ (int) old('overall_satisfaction', 5) <= 3 ? 'block' : 'none' }};">Please let us know why you gave this rating and provide specific details on how we can improve our services to serve you better. Your feedback is important in helping us address issues and enhance the quality of your future transactions.</p>
                     </div>
                 </div>
             </div>
