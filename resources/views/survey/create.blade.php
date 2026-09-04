@@ -356,6 +356,43 @@
         }
     }
 
+    function isStepValid(stepElement) {
+        const requiredInputs = stepElement.querySelectorAll('[required]');
+        const radioGroupsChecked = new Set();
+
+        for (let input of requiredInputs) {
+            if (input.disabled) continue;
+
+            if (input.type === 'radio') {
+                if (!radioGroupsChecked.has(input.name)) {
+                    const checked = stepElement.querySelector(`input[name="${input.name}"]:checked`);
+                    if (!checked) return false;
+                    radioGroupsChecked.add(input.name);
+                }
+            } else if (input.type === 'checkbox') {
+                if (!input.checked) return false;
+            } else {
+                if (typeof input.value !== 'string' || input.value.trim() === '') {
+                    return false;
+                }
+                if (!input.checkValidity()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    function updateStepButtons() {
+        document.querySelectorAll('.form-step').forEach(stepElement => {
+            const primaryBtn = stepElement.querySelector('.btn-primary');
+            if (!primaryBtn) return;
+
+            const valid = isStepValid(stepElement);
+            primaryBtn.classList.toggle('is-ready', valid);
+        });
+    }
+
     document.querySelectorAll('[data-satisfaction-meter]').forEach(meter => {
         const range = meter.querySelector('.satisfaction-range');
         const radios = meter.querySelectorAll('input[name="overall_satisfaction"]');
@@ -375,6 +412,7 @@
             });
 
             updateRemarksRequirement(rating);
+            updateStepButtons();
         }
 
         range.addEventListener('input', event => updateSatisfactionMeter(event.target.value));
@@ -426,6 +464,8 @@
                 radio.checked = false;
             }
         });
+
+        updateStepButtons();
     }
 
     document.querySelectorAll('input[name="cc1_awareness"]').forEach(radio => {
@@ -433,6 +473,13 @@
     });
 
     updateCcState();
+
+    const surveyForm = document.getElementById('surveyForm');
+    if (surveyForm) {
+        surveyForm.addEventListener('input', updateStepButtons);
+        surveyForm.addEventListener('change', updateStepButtons);
+    }
+    updateStepButtons();
 
     function showStep(step) {
         document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
@@ -449,6 +496,7 @@
                 });
             }
         }
+        updateStepButtons();
     }
 
     function nextStep(step) {

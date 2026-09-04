@@ -17,7 +17,7 @@
             Your response has been recorded. Thank you for helping the National Dairy Authority improve its services.
         </p>
         <div class="confirmation-actions">
-            <a href="{{ route('survey.create') }}" class="btn btn-primary">
+            <a href="{{ route('survey.create') }}" class="btn btn-primary is-ready">
                 Submit another response
             </a>
         </div>
