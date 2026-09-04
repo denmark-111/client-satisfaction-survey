@@ -155,4 +155,13 @@ class SurveyValidationTest extends TestCase
             'cc3_helpfulness' => null,
         ]);
     }
+
+    public function test_confirmation_page_renders_successfully(): void
+    {
+        $response = $this->get(route('survey.confirmation'));
+        $response->assertStatus(200);
+        $response->assertSee('Client Satisfaction Survey');
+        $response->assertSee('Your response has been recorded.');
+        $response->assertSee('Submit another response');
+    }
 }
