@@ -46,6 +46,105 @@ body {
     pointer-events: none;
 }
 
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    background: #eaf7ec;
+}
+
+.loading-screen::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 62%;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 28px 36px rgba(27, 94, 32, 0.28), 0 0 0 4px rgba(27, 94, 32, 0.12), 0 0 0 18px rgba(255, 255, 255, 0.55), 0 0 0 38px rgba(255, 255, 255, 0.28);
+    transform: translate(-50%, -50%) scale(0);
+}
+
+.loading-screen.is-spilling {
+    animation: loading-screen-wipe 0.75s ease 0.9s forwards;
+}
+
+.loading-screen.is-spilling::before {
+    animation: milk-spill 0.9s cubic-bezier(.22, 1, .36, 1) forwards;
+}
+
+.loading-bottle-wrap {
+    position: relative;
+    width: 104px;
+    height: 230px;
+    animation: bottle-fall 1s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+.loading-bottle {
+    display: grid;
+    place-items: center;
+}
+
+.loading-milk-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    height: 0;
+    background: linear-gradient(180deg, #ffffff 0%, #f5fbe9 55%, #e9f5d6 100%);
+    transition: height 0.08s linear;
+}
+
+.loading-milk-fill::before {
+    content: "";
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: radial-gradient(circle at 15% 50%, #fff 0 5px, transparent 6px), radial-gradient(circle at 45% 50%, #fff 0 4px, transparent 5px), radial-gradient(circle at 75% 50%, #fff 0 5px, transparent 6px);
+    animation: milkWave 2.6s ease-in-out infinite;
+}
+
+.loading-bottle-logo {
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    z-index: 2;
+    animation: label-fade 0.5s ease-out 0.55s both;
+}
+
+.loading-percent {
+    position: absolute;
+    left: 50%;
+    top: 64%;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    color: var(--brand);
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+@keyframes milk-spill {
+    to {
+        transform: translate(-50%, -50%) scale(18);
+    }
+}
+
+@keyframes loading-screen-wipe {
+    to {
+        clip-path: inset(0 0 0 100%);
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
 body::before {
     display: none;
 }
