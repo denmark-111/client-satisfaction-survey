@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\FormOption;
+use App\Models\Service;
 use App\Models\Survey;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +23,7 @@ class SurveyValidationTest extends TestCase
     {
         $center = FormOption::where('category', 'center')->first();
         $region = FormOption::where('category', 'region')->first();
-        $service = FormOption::where('category', 'service')->first();
+        $service = Service::first();
 
         return array_merge([
             'agreed_to_participate' => '1',

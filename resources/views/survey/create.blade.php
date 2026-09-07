@@ -46,6 +46,15 @@
 <img class="background-video" src="{{ asset('grass-field-gif.gif') }}" alt="" aria-hidden="true">
 <div class="container">
 
+    @if (!empty($sessionError))
+        <div class="session-alert-card">
+            <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
+            <h3>Survey Notice</h3>
+            <p>{{ $sessionError }}</p>
+            <a href="{{ route('survey.create') }}" class="btn btn-primary" style="display: inline-block; text-decoration: none; padding: 10px 24px;">Start Blank Survey (Kiosk Mode)</a>
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="errors-summary">
             <strong>Please check the form for errors:</strong>
@@ -59,6 +68,7 @@
 
     <form id="surveyForm" action="{{ route('survey.store') }}" method="POST">
         @csrf
+        <input type="hidden" name="session_token" value="{{ $session?->token }}">
 
         <!-- STEP 1: Consent -->
         <div class="form-step active" data-step="1">
@@ -100,14 +110,22 @@
                 <div class="card-content">
                     <p class="hint" style="margin-bottom: 16px;">You have an option to keep your identity hidden as it is <strong>not required</strong> to answer this portion.</p>
                     
+                    @php($lockName = $session && $session->isFieldLocked('respondent_name'))
                     <div class="form-group">
                         <label class="form-label">Respondent Name</label>
-                        <input type="text" name="respondent_name" value="{{ old('respondent_name') }}" placeholder="Your answer">
+                        @if($lockName)
+                            <input type="hidden" name="respondent_name" value="{{ $session->respondent_name }}">
+                        @endif
+                        <input type="text" {{ $lockName ? '' : 'name="respondent_name"' }} value="{{ old('respondent_name', $session?->respondent_name) }}" placeholder="Your answer" {{ $lockName ? 'disabled' : '' }}>
                     </div>
 
+                    @php($lockContact = $session && $session->isFieldLocked('respondent_contact_number'))
                     <div class="form-group">
                         <label class="form-label">Respondent Contact Number</label>
-                        <input type="text" name="respondent_contact_number" value="{{ old('respondent_contact_number') }}" placeholder="Your answer">
+                        @if($lockContact)
+                            <input type="hidden" name="respondent_contact_number" value="{{ $session->respondent_contact_number }}">
+                        @endif
+                        <input type="text" {{ $lockContact ? '' : 'name="respondent_contact_number"' }} value="{{ old('respondent_contact_number', $session?->respondent_contact_number) }}" placeholder="Your answer" {{ $lockContact ? 'disabled' : '' }}>
                     </div>
                 </div>
             </div>
@@ -123,63 +141,132 @@
             <div class="card">
                 <div class="section-banner">Respondent Details</div>
                 <div class="card-content">
+                    @php($lockCenter = $session && $session->isFieldLocked('center_id'))
+                    @php($valCenter = old('center_id', $session?->center_id))
                     <div class="form-group">
                         <label class="form-label">DAIRY FARMERS LIVELIHOOD CENTER <span class="required">*</span></label>
-                        <select name="center_id" required>
-                            <option value="">Choose</option>
-                            @foreach($centers as $center)
-                                <option value="{{ $center->id }}" {{ old('center_id') == $center->id ? 'selected' : '' }}>{{ $center->label }}</option>
-                            @endforeach
-                        </select>
+                        @if($lockCenter)
+                            <input type="hidden" name="center_id" value="{{ $valCenter }}">
+                            <select disabled>
+                                @foreach($centers as $center)
+                                    <option value="{{ $center->id }}" {{ $valCenter == $center->id ? 'selected' : '' }}>{{ $center->label }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <select name="center_id" required>
+                                <option value="">Choose</option>
+                                @foreach($centers as $center)
+                                    <option value="{{ $center->id }}" {{ $valCenter == $center->id ? 'selected' : '' }}>{{ $center->label }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
 
+                    @php($lockDivision = $session && $session->isFieldLocked('division_office'))
                     <div class="form-group">
                         <label class="form-label">Division/Office <span class="required">*</span></label>
-                        <input type="text" name="division_office" value="{{ old('division_office') }}" placeholder="Your answer" required>
+                        @if($lockDivision)
+                            <input type="hidden" name="division_office" value="{{ $session->division_office }}">
+                            <input type="text" value="{{ old('division_office', $session->division_office) }}" placeholder="Your answer" disabled>
+                        @else
+                            <input type="text" name="division_office" value="{{ old('division_office') }}" placeholder="Your answer" required>
+                        @endif
                     </div>
 
+                    @php($lockClientType = $session && $session->isFieldLocked('client_type'))
+                    @php($valClientType = old('client_type', $session?->client_type))
                     <div class="form-group">
                         <label class="form-label">Client Type <span class="required">*</span></label>
-                        <div class="radio-group">
-                            @foreach(['Citizen', 'Business', 'Government(Employee or Another Agency)'] as $type)
-                                <label class="radio-option">
-                                    <input type="radio" name="client_type" value="{{ $type }}" {{ old('client_type') == $type ? 'checked' : '' }} required>
-                                    {{ $type }}
-                                </label>
-                            @endforeach
-                        </div>
+                        @if($lockClientType)
+                            <input type="hidden" name="client_type" value="{{ $valClientType }}">
+                            <div class="radio-group">
+                                @foreach(['Citizen', 'Business', 'Government(Employee or Another Agency)'] as $type)
+                                    <label class="radio-option {{ $valClientType == $type ? 'is-selected' : '' }}">
+                                        <input type="radio" value="{{ $type }}" {{ $valClientType == $type ? 'checked' : '' }} disabled>
+                                        {{ $type }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="radio-group">
+                                @foreach(['Citizen', 'Business', 'Government(Employee or Another Agency)'] as $type)
+                                    <label class="radio-option {{ $valClientType == $type ? 'is-selected' : '' }}">
+                                        <input type="radio" name="client_type" value="{{ $type }}" {{ $valClientType == $type ? 'checked' : '' }} required>
+                                        {{ $type }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
+                    @php($lockDate = $session && $session->isFieldLocked('date_service_availed'))
+                    @php($valDate = old('date_service_availed', optional($session?->date_service_availed)->format('Y-m-d')))
                     <div class="form-group">
                         <label class="form-label">Date Service Availed <span class="required">*</span></label>
-                        <input type="date" name="date_service_availed" id="date_service_availed" max="{{ date('Y-m-d') }}" value="{{ old('date_service_availed') }}" required>
+                        @if($lockDate)
+                            <input type="hidden" name="date_service_availed" value="{{ $valDate }}">
+                            <input type="date" id="date_service_availed" value="{{ $valDate }}" disabled>
+                        @else
+                            <input type="date" name="date_service_availed" id="date_service_availed" max="{{ date('Y-m-d') }}" value="{{ $valDate }}" required>
+                        @endif
                     </div>
 
+                    @php($lockSex = $session && $session->isFieldLocked('sex'))
+                    @php($valSex = old('sex', $session?->sex))
                     <div class="form-group">
                         <label class="form-label">Sex <span class="required">*</span></label>
-                        <div class="radio-group">
-                            @foreach(['Male', 'Female', 'Intersex', 'Prefer not to say'] as $sex)
-                                <label class="radio-option">
-                                    <input type="radio" name="sex" value="{{ $sex }}" {{ old('sex') == $sex ? 'checked' : '' }} required>
-                                    {{ $sex }}
-                                </label>
-                            @endforeach
-                        </div>
+                        @if($lockSex)
+                            <input type="hidden" name="sex" value="{{ $valSex }}">
+                            <div class="radio-group">
+                                @foreach(['Male', 'Female', 'Intersex', 'Prefer not to say'] as $sex)
+                                    <label class="radio-option {{ $valSex == $sex ? 'is-selected' : '' }}">
+                                        <input type="radio" value="{{ $sex }}" {{ $valSex == $sex ? 'checked' : '' }} disabled>
+                                        {{ $sex }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="radio-group">
+                                @foreach(['Male', 'Female', 'Intersex', 'Prefer not to say'] as $sex)
+                                    <label class="radio-option {{ $valSex == $sex ? 'is-selected' : '' }}">
+                                        <input type="radio" name="sex" value="{{ $sex }}" {{ $valSex == $sex ? 'checked' : '' }} required>
+                                        {{ $sex }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
+                    @php($lockAge = $session && $session->isFieldLocked('age'))
                     <div class="form-group">
                         <label class="form-label">Age <span class="required">*</span></label>
-                        <input type="number" name="age" min="1" max="120" value="{{ old('age') }}" placeholder="Your answer" required>
+                        @if($lockAge)
+                            <input type="hidden" name="age" value="{{ $session->age }}">
+                            <input type="number" value="{{ old('age', $session->age) }}" placeholder="Your answer" disabled>
+                        @else
+                            <input type="number" name="age" min="1" max="120" value="{{ old('age') }}" placeholder="Your answer" required>
+                        @endif
                     </div>
 
+                    @php($lockRegion = $session && $session->isFieldLocked('region_id'))
+                    @php($valRegion = old('region_id', $session?->region_id))
                     <div class="form-group">
                         <label class="form-label">Region of Residence <span class="required">*</span></label>
-                        <select name="region_id" required>
-                            <option value="">Choose</option>
-                            @foreach($regions as $region)
-                                <option value="{{ $region->id }}" {{ old('region_id') == $region->id ? 'selected' : '' }}>{{ $region->label }}</option>
-                            @endforeach
-                        </select>
+                        @if($lockRegion)
+                            <input type="hidden" name="region_id" value="{{ $valRegion }}">
+                            <select disabled>
+                                @foreach($regions as $region)
+                                    <option value="{{ $region->id }}" {{ $valRegion == $region->id ? 'selected' : '' }}>{{ $region->label }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <select name="region_id" required>
+                                <option value="">Choose</option>
+                                @foreach($regions as $region)
+                                    <option value="{{ $region->id }}" {{ $valRegion == $region->id ? 'selected' : '' }}>{{ $region->label }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -196,14 +283,25 @@
                 <div class="section-banner">Available Services</div>
                 <div class="card-content">
                     <p class="hint" style="margin-bottom: 16px;">Please select service availed.</p>
+                    @php($lockService = $session && $session->isFieldLocked('service_id'))
+                    @php($valService = old('service_id', $session?->service_id))
                     <div class="form-group">
                         <label class="form-label">Service Availed <span class="required">*</span></label>
-                        <select name="service_id" required>
-                            <option value="">Choose</option>
-                            @foreach($services as $service)
-                                <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>{{ $service->label }}</option>
-                            @endforeach
-                        </select>
+                        @if($lockService)
+                            <input type="hidden" name="service_id" value="{{ $valService }}">
+                            <select disabled>
+                                @foreach($services as $service)
+                                    <option value="{{ $service->id }}" {{ $valService == $service->id ? 'selected' : '' }}>{{ $service->name ?? $service->label }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <select name="service_id" required>
+                                <option value="">Choose</option>
+                                @foreach($services as $service)
+                                    <option value="{{ $service->id }}" {{ $valService == $service->id ? 'selected' : '' }}>{{ $service->name ?? $service->label }}</option>
+                                @endforeach
+                            </select>
+                        @endif
                     </div>
                 </div>
             </div>

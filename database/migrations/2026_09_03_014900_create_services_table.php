@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('form_options', function (Blueprint $table) {
+        Schema::create('services', function (Blueprint $table) {
             $table->id();
-            $table->string('category'); // 'center', 'region', 'service'
-            $table->string('label');
-            $table->string('code')->nullable();
+            $table->string('code')->unique();
+            $table->string('name');
+            $table->string('division_office')->nullable();
             $table->integer('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index(['category', 'is_active']);
-            $table->index(['category', 'code']);
+            $table->index(['is_active', 'sort_order']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('form_options');
+        Schema::dropIfExists('services');
     }
 };

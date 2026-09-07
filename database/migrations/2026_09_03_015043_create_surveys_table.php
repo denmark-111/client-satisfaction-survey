@@ -11,7 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('surveys', function (Blueprint $table) {// Consent & Personal Info
+        Schema::create('surveys', function (Blueprint $table) {
+            $table->id();
+
+            // Consent & Personal Info
             $table->boolean('agreed_to_participate')->default(true);
             $table->string('respondent_name')->nullable();
             $table->string('respondent_contact_number')->nullable();
@@ -26,7 +29,7 @@ return new class extends Migration
             $table->foreignId('region_id')->constrained('form_options');
 
             // Service Availed
-            $table->foreignId('service_id')->constrained('form_options');
+            $table->foreignId('service_id')->constrained('services');
 
             // Overall Satisfaction & Remarks
             $table->unsignedTinyInteger('overall_satisfaction'); // 1-10

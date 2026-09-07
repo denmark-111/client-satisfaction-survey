@@ -16,6 +16,43 @@ class StoreSurveyRequest extends FormRequest
     }
 
     /**
+     * Prepare data for validation by retrieving disabled fields from session.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('session_token')) {
+            $session = \App\Models\SurveySession::where('token', $this->input('session_token'))->first();
+
+            if ($session && $session->isValid()) {
+                $toMerge = [];
+                $lockableFields = [
+                    'respondent_name',
+                    'respondent_contact_number',
+                    'center_id',
+                    'division_office',
+                    'client_type',
+                    'date_service_availed',
+                    'sex',
+                    'age',
+                    'region_id',
+                    'service_id',
+                ];
+
+                foreach ($lockableFields as $field) {
+                    if ($session->isFieldLocked($field)) {
+                        $val = $session->$field;
+                        $toMerge[$field] = $val instanceof \Carbon\Carbon
+                            ? $val->format('Y-m-d')
+                            : $val;
+                    }
+                }
+
+                $this->merge($toMerge);
+            }
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
@@ -33,7 +70,8 @@ class StoreSurveyRequest extends FormRequest
             'sex' => ['required', Rule::in(['Male', 'Female', 'Intersex', 'Prefer not to say'])],
             'age' => ['required', 'integer', 'min:1', 'max:120'],
             'region_id' => ['required', Rule::exists('form_options', 'id')->where('category', 'region')->where('is_active', true)],
-            'service_id' => ['required', Rule::exists('form_options', 'id')->where('category', 'service')->where('is_active', true)],
+            'service_id' => ['required', Rule::exists('services', 'id')->where('is_active', true)],
+            'session_token' => ['nullable', 'string', 'exists:survey_sessions,token'],
             'overall_satisfaction' => ['required', 'integer', 'min:1', 'max:10'],
             'remarks' => [
                 'required_if:overall_satisfaction,1,2,3',

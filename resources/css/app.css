@@ -25,6 +25,68 @@
     font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
+/* Suppress carets on non-editable elements to prevent browser caret-browsing artifacts */
+*:not(input):not(textarea) {
+    caret-color: transparent !important;
+}
+
+input,
+textarea {
+    caret-color: var(--brand);
+}
+
+input:disabled,
+textarea:disabled,
+input[readonly],
+select:disabled {
+    caret-color: transparent !important;
+    cursor: not-allowed !important;
+}
+
+body,
+.container,
+.agency-header,
+.agency-title,
+.agency-subtitle,
+.survey-title,
+.survey-desc,
+.section-banner,
+.form-label,
+.panel-title,
+.satisfaction-header,
+.satisfaction-intro,
+.scale-caption,
+.radio-option,
+.checkbox-option,
+.btn,
+.hint,
+.remarks-required-note,
+table.sqd-table,
+.confirmation-island {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+
+input,
+textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    cursor: text;
+}
+
+.radio-option,
+.checkbox-option,
+.btn,
+.scale-tick,
+.satisfaction-range {
+    cursor: pointer;
+}
+
 body {
     min-height: 100vh;
     color: var(--text);
@@ -1362,6 +1424,99 @@ table.sqd-table input {
         font-size: 1.15rem;
     }
 }
+
+/* Session Pre-fill & Locked Fields */
+.session-notice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f0fdf4;
+    border: 1.5px solid #86efac;
+    color: #166534;
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(22, 101, 52, 0.08);
+}
+
+.session-notice-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.session-notice-text strong {
+    font-size: 15px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.session-notice-text span {
+    font-size: 13px;
+    color: #15803d;
+}
+
+.session-alert-card {
+    background: #fff;
+    border-radius: var(--radius-md);
+    padding: 24px;
+    text-align: center;
+    border-left: 5px solid #ef4444;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    margin-bottom: 20px;
+}
+
+.session-alert-card h3 {
+    color: #b91c1c;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.session-alert-card p {
+    color: #4b5563;
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+}
+
+.locked-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    margin-left: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.02em;
+}
+
+input[readonly].is-locked,
+select.is-locked,
+.radio-group.is-locked {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+    cursor: not-allowed !important;
+}
+
+.radio-group.is-locked {
+    padding: 6px;
+    border-radius: 8px;
+}
+
+.radio-group.is-locked .radio-option:not(.is-selected) {
+    opacity: 0.35 !important;
+    pointer-events: none !important;
+}
+
+.radio-group.is-locked .radio-option.is-selected {
+    font-weight: 700;
+    pointer-events: none !important;
+}
+
 
 
 

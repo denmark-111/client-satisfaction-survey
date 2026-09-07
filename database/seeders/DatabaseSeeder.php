@@ -12,6 +12,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(FormOptionSeeder::class);
+        $this->call([
+            FormOptionSeeder::class,
+            ServiceSeeder::class,
+        ]);
     }
 }
