@@ -140,7 +140,7 @@ class SurveySessionApiTest extends TestCase
         ]);
     }
 
-    public function test_kiosk_mode_loads_empty_and_unlocked_form_without_token(): void
+    public function test_manual_mode_loads_empty_and_unlocked_form_without_token(): void
     {
         $response = $this->get(route('survey.create'));
 
@@ -240,7 +240,10 @@ class SurveySessionApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('This survey has already been completed.');
-        $response->assertSee('Start Blank Survey (Kiosk Mode)');
+        $response->assertSee('confirmation-island');
+        $response->assertSee('Return to Home');
+        $response->assertDontSee('Kiosk');
+        $response->assertDontSee('⚠️');
     }
 
     public function test_expired_session_shows_expired_notice(): void
@@ -255,6 +258,10 @@ class SurveySessionApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('This survey link has expired.');
+        $response->assertSee('confirmation-island');
+        $response->assertSee('Return to Home');
+        $response->assertDontSee('Kiosk');
+        $response->assertDontSee('⚠️');
     }
 
     public function test_invalid_token_shows_invalid_notice(): void
@@ -263,5 +270,9 @@ class SurveySessionApiTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('The survey link is invalid or does not exist.');
+        $response->assertSee('confirmation-island');
+        $response->assertSee('Return to Home');
+        $response->assertDontSee('Kiosk');
+        $response->assertDontSee('⚠️');
     }
 }

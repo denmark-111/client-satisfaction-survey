@@ -15,28 +15,37 @@ class SurveyController extends Controller
 {
     public function create(Request $request): View
     {
-        $centers = FormOption::category('center')->get();
-        $regions = FormOption::category('region')->get();
-        $services = Service::active()->orderBy('sort_order')->orderBy('name')->get();
-
         $session = null;
-        $sessionError = null;
 
         if ($request->filled('token')) {
             $foundSession = SurveySession::where('token', $request->query('token'))->first();
 
             if (! $foundSession) {
-                $sessionError = 'The survey link is invalid or does not exist.';
-            } elseif ($foundSession->isCompleted()) {
-                $sessionError = 'This survey has already been completed. Thank you for your feedback!';
-            } elseif ($foundSession->isExpired()) {
-                $sessionError = 'This survey link has expired.';
-            } else {
-                $session = $foundSession;
+                return view('survey.invalid', [
+                    'sessionError' => 'The survey link is invalid or does not exist.',
+                ]);
             }
+
+            if ($foundSession->isCompleted()) {
+                return view('survey.invalid', [
+                    'sessionError' => 'This survey has already been completed. Thank you for your feedback!',
+                ]);
+            }
+
+            if ($foundSession->isExpired()) {
+                return view('survey.invalid', [
+                    'sessionError' => 'This survey link has expired.',
+                ]);
+            }
+
+            $session = $foundSession;
         }
 
-        return view('survey.create', compact('centers', 'regions', 'services', 'session', 'sessionError'));
+        $centers = FormOption::category('center')->get();
+        $regions = FormOption::category('region')->get();
+        $services = Service::active()->orderBy('sort_order')->orderBy('name')->get();
+
+        return view('survey.create', compact('centers', 'regions', 'services', 'session'));
     }
 
     public function store(StoreSurveyRequest $request): RedirectResponse

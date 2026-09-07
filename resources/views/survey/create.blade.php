@@ -45,16 +45,6 @@
 </script>
 <img class="background-video" src="{{ asset('grass-field-gif.gif') }}" alt="" aria-hidden="true">
 <div class="container">
-
-    @if (!empty($sessionError))
-        <div class="session-alert-card">
-            <div style="font-size: 32px; margin-bottom: 8px;">⚠️</div>
-            <h3>Survey Notice</h3>
-            <p>{{ $sessionError }}</p>
-            <a href="{{ route('survey.create') }}" class="btn btn-primary" style="display: inline-block; text-decoration: none; padding: 10px 24px;">Start Blank Survey (Kiosk Mode)</a>
-        </div>
-    @endif
-
     @if ($errors->any())
         <div class="errors-summary">
             <strong>Please check the form for errors:</strong>
