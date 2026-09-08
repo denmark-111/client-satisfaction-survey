@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreSurveyRequest;
+use App\Jobs\SendSurveyCompletedWebhook;
 use App\Models\FormOption;
 use App\Models\Service;
 use App\Models\Survey;
@@ -91,6 +92,14 @@ class SurveyController extends Controller
 
         if ($session && $session->isValid()) {
             $session->markCompleted($survey);
+
+            if (! empty($session->webhook_url)) {
+                try {
+                    SendSurveyCompletedWebhook::dispatch($survey->id, $session->id);
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('Synchronous webhook delivery failed: ' . $e->getMessage());
+                }
+            }
         }
 
         return redirect()->route('survey.confirmation');

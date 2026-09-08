@@ -63,6 +63,7 @@ class CreateSurveySessionRequest extends FormRequest
                 Rule::exists('services', 'code')->where('is_active', true),
             ],
             'expires_in_hours' => ['nullable', 'integer', 'min:1', 'max:720'],
+            'webhook_url' => ['nullable', 'url', 'max:2048'],
         ];
     }
 }

@@ -55,6 +55,7 @@ class SurveySessionController extends Controller
             'age' => $validated['age'] ?? null,
             'region_id' => $regionId,
             'service_id' => $serviceId,
+            'webhook_url' => $validated['webhook_url'] ?? null,
             'status' => 'pending',
             'expires_at' => $expiresAt,
         ]);

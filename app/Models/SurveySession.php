@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SurveySession extends Model
 {
@@ -37,6 +38,11 @@ class SurveySession extends Model
     public function region(): BelongsTo
     {
         return $this->belongsTo(FormOption::class, 'region_id');
+    }
+
+    public function webhookDeliveries(): HasMany
+    {
+        return $this->hasMany(WebhookDelivery::class, 'survey_session_id');
     }
 
     public function isCompleted(): bool
