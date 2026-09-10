@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Survey extends Model
+class SurveyResponse extends Model
 {
     use HasFactory;
+
+    protected $table = 'survey_responses';
 
     protected $guarded = ['id'];
 
@@ -23,6 +24,11 @@ class Survey extends Model
         'cc2_visibility' => 'integer',
         'cc3_helpfulness' => 'integer',
     ];
+
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(SurveySession::class, 'survey_session_id');
+    }
 
     public function center(): BelongsTo
     {
@@ -39,13 +45,8 @@ class Survey extends Model
         return $this->belongsTo(Service::class, 'service_id');
     }
 
-    public function session(): HasOne
-    {
-        return $this->hasOne(SurveySession::class);
-    }
-
     public function webhookDeliveries(): HasMany
     {
-        return $this->hasMany(WebhookDelivery::class, 'survey_id');
+        return $this->hasMany(WebhookDelivery::class, 'survey_response_id');
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\SurveyController;
+use App\Http\Controllers\Api\SurveyResponseController;
 use App\Http\Controllers\Api\SurveySessionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,9 +17,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::post('/survey-sessions', [SurveySessionController::class, 'store'])->name('api.survey-sessions.store');
-Route::post('/surveys', [SurveyController::class, 'store'])->name('api.surveys.store');
+Route::post('/survey-responses', [SurveyResponseController::class, 'store'])->name('api.survey-responses.store');
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-

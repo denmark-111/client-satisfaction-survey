@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
 class SurveySession extends Model
 {
     use HasFactory;
@@ -20,9 +22,9 @@ class SurveySession extends Model
         'completed_at' => 'datetime',
     ];
 
-    public function survey(): BelongsTo
+    public function response(): HasOne
     {
-        return $this->belongsTo(Survey::class);
+        return $this->hasOne(SurveyResponse::class, 'survey_session_id');
     }
 
     public function service(): BelongsTo
@@ -65,12 +67,11 @@ class SurveySession extends Model
         return $this->getAttribute($field) !== null;
     }
 
-    public function markCompleted(Survey $survey): void
+    public function markCompleted(): void
     {
         $this->update([
             'status' => 'completed',
             'completed_at' => now(),
-            'survey_id' => $survey->id,
         ]);
     }
 }

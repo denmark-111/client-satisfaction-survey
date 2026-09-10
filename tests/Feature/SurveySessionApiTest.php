@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FormOption;
 use App\Models\Service;
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -213,28 +213,30 @@ class SurveySessionApiTest extends TestCase
         $response->assertSessionHasNoErrors();
         $response->assertRedirect(route('survey.confirmation'));
 
-        $survey = Survey::latest('id')->first();
-        $this->assertNotNull($survey);
-        $this->assertNotNull($survey->id);
+        $surveyResponse = SurveyResponse::latest('id')->first();
+        $this->assertNotNull($surveyResponse);
+        $this->assertNotNull($surveyResponse->id);
         // Enforced server-side value from locked session field
-        $this->assertEquals('Original Name', $survey->respondent_name);
+        $this->assertEquals('Original Name', $surveyResponse->respondent_name);
+        $this->assertEquals($session->id, $surveyResponse->survey_session_id);
 
         $session->refresh();
         $this->assertEquals('completed', $session->status);
         $this->assertNotNull($session->completed_at);
-        $this->assertEquals($survey->id, $session->survey_id);
+        $this->assertEquals($surveyResponse->id, $session->response->id);
     }
 
     public function test_completed_session_shows_completion_notice_and_prevents_duplicate_submission(): void
     {
-        $survey = Survey::create($this->validSurveySubmissionData());
-
         $session = SurveySession::create([
             'token' => 'already-used-token',
             'status' => 'completed',
             'completed_at' => now()->subHour(),
-            'survey_id' => $survey->id,
         ]);
+
+        SurveyResponse::create(array_merge($this->validSurveySubmissionData(), [
+            'survey_session_id' => $session->id,
+        ]));
 
         $response = $this->get(route('survey.create', ['token' => $session->token]));
 

@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FormOption;
 use App\Models\Service;
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -78,7 +78,7 @@ class SurveyValidationTest extends TestCase
         $response->assertSessionHasNoErrors();
         $response->assertRedirect(route('survey.confirmation'));
 
-        $this->assertDatabaseHas('surveys', [
+        $this->assertDatabaseHas('survey_responses', [
             'overall_satisfaction' => 2,
             'remarks' => 'Could be better organized.',
         ]);
@@ -95,7 +95,7 @@ class SurveyValidationTest extends TestCase
         $response->assertSessionHasNoErrors();
         $response->assertRedirect(route('survey.confirmation'));
 
-        $this->assertDatabaseHas('surveys', [
+        $this->assertDatabaseHas('survey_responses', [
             'overall_satisfaction' => 4,
             'remarks' => null,
         ]);
@@ -150,7 +150,7 @@ class SurveyValidationTest extends TestCase
         $response->assertSessionHasNoErrors();
         $response->assertRedirect(route('survey.confirmation'));
 
-        $this->assertDatabaseHas('surveys', [
+        $this->assertDatabaseHas('survey_responses', [
             'cc1_awareness' => 4,
             'cc2_visibility' => null,
             'cc3_helpfulness' => null,
@@ -190,7 +190,7 @@ class SurveyValidationTest extends TestCase
         $response->assertSessionHasNoErrors();
         $response->assertRedirect(route('survey.confirmation'));
 
-        $this->assertDatabaseHas('surveys', [
+        $this->assertDatabaseHas('survey_responses', [
             'cc1_awareness' => 2,
             'cc2_visibility' => 3,
             'cc3_helpfulness' => 2,

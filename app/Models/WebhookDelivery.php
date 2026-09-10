@@ -23,8 +23,8 @@ class WebhookDelivery extends Model
         return $this->belongsTo(SurveySession::class, 'survey_session_id');
     }
 
-    public function survey(): BelongsTo
+    public function response(): BelongsTo
     {
-        return $this->belongsTo(Survey::class, 'survey_id');
+        return $this->belongsTo(SurveyResponse::class, 'survey_response_id');
     }
 }

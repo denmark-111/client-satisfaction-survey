@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('surveys', function (Blueprint $table) {
+        Schema::create('survey_responses', function (Blueprint $table) {
             $table->id();
+
+            // Associated Survey Session (nullable for direct submissions if any)
+            $table->foreignId('survey_session_id')->nullable()->constrained('survey_sessions')->nullOnDelete();
 
             // Consent & Personal Info
             $table->boolean('agreed_to_participate')->default(true);
@@ -61,6 +64,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('surveys');
+        Schema::dropIfExists('survey_responses');
     }
 };

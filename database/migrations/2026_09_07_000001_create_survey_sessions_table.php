@@ -29,9 +29,11 @@ return new class extends Migration
             $table->foreignId('region_id')->nullable()->constrained('form_options')->noActionOnDelete();
             $table->foreignId('service_id')->nullable()->constrained('services')->noActionOnDelete();
 
+            // Webhook callback
+            $table->string('webhook_url', 2048)->nullable();
+
             // Lifecycle & Status
             $table->string('status', 20)->default('pending'); // 'pending', 'completed', 'expired'
-            $table->foreignId('survey_id')->nullable()->constrained('surveys')->noActionOnDelete();
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamps();

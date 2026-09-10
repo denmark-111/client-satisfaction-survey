@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\StoreSurveyRequest;
+use App\Http\Requests\Api\StoreSurveyResponseRequest;
 use App\Jobs\SendSurveyCompletedWebhook;
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
-class SurveyController extends Controller
+class SurveyResponseController extends Controller
 {
     /**
-     * Submit a survey directly via API.
+     * Submit a survey response directly via API.
      */
-    public function store(StoreSurveyRequest $request): JsonResponse
+    public function store(StoreSurveyResponseRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -69,38 +69,38 @@ class SurveyController extends Controller
             if (! empty($webhookUrl)) {
                 $session->update(['webhook_url' => $webhookUrl]);
             }
-        }
-
-        $survey = Survey::create($validated);
-
-        if ($session) {
-            $session->markCompleted($survey);
         } else {
             $session = SurveySession::create([
                 'token' => Str::random(64),
                 'client_system' => $clientSystem,
                 'external_transaction_id' => $externalTransactionId,
                 'webhook_url' => $webhookUrl,
-                'respondent_name' => $survey->respondent_name,
-                'respondent_contact_number' => $survey->respondent_contact_number,
-                'center_id' => $survey->center_id,
-                'division_office' => $survey->division_office,
-                'client_type' => $survey->client_type,
-                'date_service_availed' => $survey->date_service_availed,
-                'sex' => $survey->sex,
-                'age' => $survey->age,
-                'region_id' => $survey->region_id,
-                'service_id' => $survey->service_id,
+                'respondent_name' => $validated['respondent_name'] ?? null,
+                'respondent_contact_number' => $validated['respondent_contact_number'] ?? null,
+                'center_id' => $validated['center_id'] ?? null,
+                'division_office' => $validated['division_office'] ?? null,
+                'client_type' => $validated['client_type'] ?? null,
+                'date_service_availed' => $validated['date_service_availed'] ?? null,
+                'sex' => $validated['sex'] ?? null,
+                'age' => $validated['age'] ?? null,
+                'region_id' => $validated['region_id'] ?? null,
+                'service_id' => $validated['service_id'] ?? null,
                 'status' => 'completed',
                 'completed_at' => now(),
-                'survey_id' => $survey->id,
             ]);
+        }
+
+        $validated['survey_session_id'] = $session->id;
+        $response = SurveyResponse::create($validated);
+
+        if ($sessionToken && $session) {
+            $session->markCompleted();
         }
 
         $webhookStatus = 'none';
         if (! empty($session->webhook_url)) {
             try {
-                SendSurveyCompletedWebhook::dispatch($survey->id, $session->id);
+                SendSurveyCompletedWebhook::dispatch($response->id, $session->id);
                 $webhookStatus = 'queued';
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning('Synchronous webhook delivery failed: ' . $e->getMessage());
@@ -110,9 +110,10 @@ class SurveyController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Survey submitted successfully.',
+            'message' => 'Survey response submitted successfully.',
             'data' => [
-                'survey_id' => $survey->id,
+                'response_id' => $response->id,
+                'survey_id' => $response->id,
                 'session_token' => $session->token,
                 'client_system' => $session->client_system,
                 'external_transaction_id' => $session->external_transaction_id,

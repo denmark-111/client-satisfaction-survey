@@ -6,7 +6,7 @@ use App\Http\Requests\StoreSurveyRequest;
 use App\Jobs\SendSurveyCompletedWebhook;
 use App\Models\FormOption;
 use App\Models\Service;
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -83,19 +83,21 @@ class SurveyController extends Controller
                         $validated[$field] = $session->$field;
                     }
                 }
+
+                $validated['survey_session_id'] = $session->id;
             }
         }
 
         unset($validated['session_token']);
 
-        $survey = Survey::create($validated);
+        $response = SurveyResponse::create($validated);
 
         if ($session && $session->isValid()) {
-            $session->markCompleted($survey);
+            $session->markCompleted();
 
             if (! empty($session->webhook_url)) {
                 try {
-                    SendSurveyCompletedWebhook::dispatch($survey->id, $session->id);
+                    SendSurveyCompletedWebhook::dispatch($response->id, $session->id);
                 } catch (\Throwable $e) {
                     \Illuminate\Support\Facades\Log::warning('Synchronous webhook delivery failed: ' . $e->getMessage());
                 }

@@ -34,8 +34,13 @@ class Service extends Model
         return $query->where('is_active', true);
     }
 
+    public function responses(): HasMany
+    {
+        return $this->hasMany(SurveyResponse::class);
+    }
+
     public function surveys(): HasMany
     {
-        return $this->hasMany(Survey::class);
+        return $this->responses();
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('webhook_deliveries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('survey_session_id')->nullable()->constrained('survey_sessions')->noActionOnDelete();
-            $table->foreignId('survey_id')->nullable()->constrained('surveys')->noActionOnDelete();
+            $table->foreignId('survey_response_id')->nullable()->constrained('survey_responses')->noActionOnDelete();
             $table->string('url', 2048);
             $table->string('event', 64)->default('survey.completed');
             $table->json('payload');

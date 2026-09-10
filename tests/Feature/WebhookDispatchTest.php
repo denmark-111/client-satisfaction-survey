@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Jobs\SendSurveyCompletedWebhook;
 use App\Models\FormOption;
 use App\Models\Service;
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use App\Models\WebhookDelivery;
 use Carbon\Carbon;
@@ -70,7 +70,7 @@ class WebhookDispatchTest extends TestCase
             'webhook_url' => 'https://client-portal.test/api/webhooks/survey',
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([
@@ -79,6 +79,8 @@ class WebhookDispatchTest extends TestCase
                     'webhook_status' => 'queued',
                 ],
             ]);
+
+        $responseId = $response->json('data.response_id');
 
         Http::assertSent(function ($request) {
             return $request->url() === 'https://client-portal.test/api/webhooks/survey'
@@ -91,6 +93,7 @@ class WebhookDispatchTest extends TestCase
         });
 
         $this->assertDatabaseHas('webhook_deliveries', [
+            'survey_response_id' => $responseId,
             'url' => 'https://client-portal.test/api/webhooks/survey',
             'event' => 'survey.completed',
             'status' => 'success',
@@ -117,7 +120,7 @@ class WebhookDispatchTest extends TestCase
             'session_token' => $token,
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([
@@ -127,6 +130,8 @@ class WebhookDispatchTest extends TestCase
                 ],
             ]);
 
+        $responseId = $response->json('data.response_id');
+
         Http::assertSent(function ($request) use ($token) {
             return $request->url() === 'https://external-client.test/webhooks/callback'
                 && $request['data']['session_token'] === $token
@@ -134,6 +139,7 @@ class WebhookDispatchTest extends TestCase
         });
 
         $this->assertDatabaseHas('webhook_deliveries', [
+            'survey_response_id' => $responseId,
             'url' => 'https://external-client.test/webhooks/callback',
             'status' => 'success',
         ]);
@@ -181,7 +187,7 @@ class WebhookDispatchTest extends TestCase
 
         $payload = $this->validSurveyData();
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([
@@ -201,15 +207,16 @@ class WebhookDispatchTest extends TestCase
             'https://failing-client.test/webhook' => Http::response('Internal Server Error', 500),
         ]);
 
-        $survey = Survey::create($this->validSurveyData());
         $session = SurveySession::create([
             'token' => 'failing-test-session',
             'webhook_url' => 'https://failing-client.test/webhook',
             'status' => 'completed',
-            'survey_id' => $survey->id,
         ]);
+        $responseModel = SurveyResponse::create(array_merge($this->validSurveyData(), [
+            'survey_session_id' => $session->id,
+        ]));
 
-        $job = new SendSurveyCompletedWebhook($survey->id, $session->id);
+        $job = new SendSurveyCompletedWebhook($responseModel->id, $session->id);
 
         try {
             $job->handle();
@@ -219,6 +226,8 @@ class WebhookDispatchTest extends TestCase
         }
 
         $this->assertDatabaseHas('webhook_deliveries', [
+            'survey_session_id' => $session->id,
+            'survey_response_id' => $responseModel->id,
             'url' => 'https://failing-client.test/webhook',
             'status' => 'failed',
             'response_status' => 500,

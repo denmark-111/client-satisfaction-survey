@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\FormOption;
 use App\Models\Service;
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,12 +62,12 @@ class ApiSurveySubmissionTest extends TestCase
             'external_transaction_id' => 'TX-DIRECT-99',
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([
                 'success' => true,
-                'message' => 'Survey submitted successfully.',
+                'message' => 'Survey response submitted successfully.',
                 'data' => [
                     'client_system' => 'dairy-loan-portal',
                     'external_transaction_id' => 'TX-DIRECT-99',
@@ -75,22 +75,24 @@ class ApiSurveySubmissionTest extends TestCase
                 ],
             ]);
 
-        $surveyId = $response->json('data.survey_id');
+        $responseId = $response->json('data.response_id');
         $sessionToken = $response->json('data.session_token');
 
-        $this->assertDatabaseHas('surveys', [
-            'id' => $surveyId,
+        $this->assertDatabaseHas('survey_responses', [
+            'id' => $responseId,
             'respondent_name' => 'Maria Santos',
             'overall_satisfaction' => 5,
         ]);
 
         $this->assertDatabaseHas('survey_sessions', [
             'token' => $sessionToken,
-            'survey_id' => $surveyId,
             'client_system' => 'dairy-loan-portal',
             'external_transaction_id' => 'TX-DIRECT-99',
             'status' => 'completed',
         ]);
+
+        $surveyResponse = SurveyResponse::find($responseId);
+        $this->assertEquals($sessionToken, $surveyResponse->session->token);
     }
 
     public function test_client_can_submit_survey_using_semantic_codes(): void
@@ -106,13 +108,13 @@ class ApiSurveySubmissionTest extends TestCase
         $payload['region_code'] = $region->code;
         $payload['service_code'] = $service->code;
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)->assertJson(['success' => true]);
 
-        $surveyId = $response->json('data.survey_id');
-        $this->assertDatabaseHas('surveys', [
-            'id' => $surveyId,
+        $responseId = $response->json('data.response_id');
+        $this->assertDatabaseHas('survey_responses', [
+            'id' => $responseId,
             'center_id' => $center->id,
             'region_id' => $region->id,
             'service_id' => $service->id,
@@ -151,22 +153,23 @@ class ApiSurveySubmissionTest extends TestCase
             'age' => 19,
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)->assertJson(['success' => true]);
 
-        $surveyId = $response->json('data.survey_id');
-        $survey = Survey::find($surveyId);
+        $responseId = $response->json('data.response_id');
+        $surveyResponse = SurveyResponse::find($responseId);
 
         // Assert locked fields from session were enforced
-        $this->assertEquals('Original Prefill Name', $survey->respondent_name);
-        $this->assertEquals('Prefilled Office', $survey->division_office);
-        $this->assertEquals('Business', $survey->client_type);
-        $this->assertEquals(45, $survey->age);
+        $this->assertEquals('Original Prefill Name', $surveyResponse->respondent_name);
+        $this->assertEquals('Prefilled Office', $surveyResponse->division_office);
+        $this->assertEquals('Business', $surveyResponse->client_type);
+        $this->assertEquals(45, $surveyResponse->age);
+        $this->assertEquals($session->id, $surveyResponse->survey_session_id);
 
         $session->refresh();
         $this->assertEquals('completed', $session->status);
-        $this->assertEquals($surveyId, $session->survey_id);
+        $this->assertEquals($responseId, $session->response->id);
     }
 
     public function test_api_submission_fails_with_invalid_session_token(): void
@@ -175,7 +178,7 @@ class ApiSurveySubmissionTest extends TestCase
             'session_token' => 'non-existent-token-xyz',
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['session_token']);
@@ -183,20 +186,21 @@ class ApiSurveySubmissionTest extends TestCase
 
     public function test_api_submission_returns_conflict_if_session_already_completed(): void
     {
-        $existingSurvey = Survey::create($this->validSurveyData());
-
         $session = SurveySession::create([
             'token' => 'completed-token-already',
             'status' => 'completed',
-            'survey_id' => $existingSurvey->id,
             'completed_at' => now(),
         ]);
+
+        SurveyResponse::create(array_merge($this->validSurveyData(), [
+            'survey_session_id' => $session->id,
+        ]));
 
         $payload = $this->validSurveyData([
             'session_token' => $session->token,
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(409)
             ->assertJson([
@@ -217,7 +221,7 @@ class ApiSurveySubmissionTest extends TestCase
             'session_token' => $session->token,
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(422)
             ->assertJson([
@@ -233,7 +237,7 @@ class ApiSurveySubmissionTest extends TestCase
             'remarks' => null,
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['remarks']);
@@ -248,7 +252,7 @@ class ApiSurveySubmissionTest extends TestCase
             'cc3_helpfulness' => 2,
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['cc2_visibility', 'cc3_helpfulness']);
 
@@ -259,7 +263,7 @@ class ApiSurveySubmissionTest extends TestCase
             'cc3_helpfulness' => null,
         ]);
 
-        $response2 = $this->postJson(route('api.surveys.store'), $payload2);
+        $response2 = $this->postJson(route('api.survey-responses.store'), $payload2);
         $response2->assertStatus(422)
             ->assertJsonValidationErrors(['cc2_visibility', 'cc3_helpfulness']);
     }
@@ -270,7 +274,7 @@ class ApiSurveySubmissionTest extends TestCase
             'date_service_availed' => Carbon::tomorrow()->format('Y-m-d'),
         ]);
 
-        $response = $this->postJson(route('api.surveys.store'), $payload);
+        $response = $this->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['date_service_availed']);

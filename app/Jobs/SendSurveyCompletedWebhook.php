@@ -2,7 +2,7 @@
 
 namespace App\Jobs;
 
-use App\Models\Survey;
+use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use App\Models\WebhookDelivery;
 use Illuminate\Bus\Queueable;
@@ -18,7 +18,7 @@ class SendSurveyCompletedWebhook implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $surveyId;
+    public int $surveyResponseId;
     public ?int $surveySessionId;
 
     /**
@@ -36,9 +36,9 @@ class SendSurveyCompletedWebhook implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(int $surveyId, ?int $surveySessionId = null)
+    public function __construct(int $surveyResponseId, ?int $surveySessionId = null)
     {
-        $this->surveyId = $surveyId;
+        $this->surveyResponseId = $surveyResponseId;
         $this->surveySessionId = $surveySessionId;
     }
 
@@ -47,14 +47,14 @@ class SendSurveyCompletedWebhook implements ShouldQueue
      */
     public function handle(): void
     {
-        $survey = Survey::with(['center', 'region', 'service'])->find($this->surveyId);
-        if (! $survey) {
+        $responseModel = SurveyResponse::with(['center', 'region', 'service'])->find($this->surveyResponseId);
+        if (! $responseModel) {
             return;
         }
 
         $session = $this->surveySessionId
             ? SurveySession::find($this->surveySessionId)
-            : $survey->session;
+            : $responseModel->session;
 
         $webhookUrl = $session?->webhook_url;
         if (empty($webhookUrl)) {
@@ -68,58 +68,59 @@ class SendSurveyCompletedWebhook implements ShouldQueue
                 'session_token' => $session?->token,
                 'client_system' => $session?->client_system,
                 'external_transaction_id' => $session?->external_transaction_id,
-                'survey_id' => $survey->id,
+                'response_id' => $responseModel->id,
+                'survey_id' => $responseModel->id,
                 'respondent' => [
-                    'name' => $survey->respondent_name,
-                    'contact_number' => $survey->respondent_contact_number,
-                    'client_type' => $survey->client_type,
-                    'sex' => $survey->sex,
-                    'age' => $survey->age,
+                    'name' => $responseModel->respondent_name,
+                    'contact_number' => $responseModel->respondent_contact_number,
+                    'client_type' => $responseModel->client_type,
+                    'sex' => $responseModel->sex,
+                    'age' => $responseModel->age,
                 ],
                 'service' => [
-                    'id' => $survey->service_id,
-                    'code' => $survey->service?->code,
-                    'name' => $survey->service?->name,
+                    'id' => $responseModel->service_id,
+                    'code' => $responseModel->service?->code,
+                    'name' => $responseModel->service?->name,
                 ],
                 'center' => [
-                    'id' => $survey->center_id,
-                    'code' => $survey->center?->code,
-                    'name' => $survey->center?->label,
+                    'id' => $responseModel->center_id,
+                    'code' => $responseModel->center?->code,
+                    'name' => $responseModel->center?->label,
                 ],
                 'region' => [
-                    'id' => $survey->region_id,
-                    'code' => $survey->region?->code,
-                    'name' => $survey->region?->label,
+                    'id' => $responseModel->region_id,
+                    'code' => $responseModel->region?->code,
+                    'name' => $responseModel->region?->label,
                 ],
-                'division_office' => $survey->division_office,
-                'date_service_availed' => $survey->date_service_availed?->format('Y-m-d'),
+                'division_office' => $responseModel->division_office,
+                'date_service_availed' => $responseModel->date_service_availed?->format('Y-m-d'),
                 'ratings' => [
-                    'overall_satisfaction' => $survey->overall_satisfaction,
-                    'remarks' => $survey->remarks,
+                    'overall_satisfaction' => $responseModel->overall_satisfaction,
+                    'remarks' => $responseModel->remarks,
                     'citizen_charter' => [
-                        'cc1_awareness' => $survey->cc1_awareness,
-                        'cc2_visibility' => $survey->cc2_visibility,
-                        'cc3_helpfulness' => $survey->cc3_helpfulness,
+                        'cc1_awareness' => $responseModel->cc1_awareness,
+                        'cc2_visibility' => $responseModel->cc2_visibility,
+                        'cc3_helpfulness' => $responseModel->cc3_helpfulness,
                     ],
                     'sqd' => [
-                        'sqd0_overall' => $survey->sqd0_overall,
-                        'sqd1_responsiveness' => $survey->sqd1_responsiveness,
-                        'sqd2_reliability' => $survey->sqd2_reliability,
-                        'sqd3_access_facilities' => $survey->sqd3_access_facilities,
-                        'sqd4_communication' => $survey->sqd4_communication,
-                        'sqd5_costs' => $survey->sqd5_costs,
-                        'sqd6_integrity' => $survey->sqd6_integrity,
-                        'sqd7_assurance' => $survey->sqd7_assurance,
-                        'sqd8_outcome' => $survey->sqd8_outcome,
+                        'sqd0_overall' => $responseModel->sqd0_overall,
+                        'sqd1_responsiveness' => $responseModel->sqd1_responsiveness,
+                        'sqd2_reliability' => $responseModel->sqd2_reliability,
+                        'sqd3_access_facilities' => $responseModel->sqd3_access_facilities,
+                        'sqd4_communication' => $responseModel->sqd4_communication,
+                        'sqd5_costs' => $responseModel->sqd5_costs,
+                        'sqd6_integrity' => $responseModel->sqd6_integrity,
+                        'sqd7_assurance' => $responseModel->sqd7_assurance,
+                        'sqd8_outcome' => $responseModel->sqd8_outcome,
                     ],
                 ],
-                'completed_at' => ($session?->completed_at ?? $survey->created_at)?->toIso8601String(),
+                'completed_at' => ($session?->completed_at ?? $responseModel->created_at)?->toIso8601String(),
             ],
         ];
 
         $delivery = WebhookDelivery::create([
             'survey_session_id' => $session?->id,
-            'survey_id' => $survey->id,
+            'survey_response_id' => $responseModel->id,
             'url' => $webhookUrl,
             'event' => 'survey.completed',
             'payload' => $payload,
@@ -172,8 +173,8 @@ class SendSurveyCompletedWebhook implements ShouldQueue
      */
     public function failed(?Throwable $exception): void
     {
-        if ($this->surveyId) {
-            WebhookDelivery::where('survey_id', $this->surveyId)
+        if ($this->surveyResponseId) {
+            WebhookDelivery::where('survey_response_id', $this->surveyResponseId)
                 ->where('status', 'pending')
                 ->latest()
                 ->first()
