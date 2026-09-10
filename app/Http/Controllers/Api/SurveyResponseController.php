@@ -66,8 +66,33 @@ class SurveyResponseController extends Controller
                 ], 422);
             }
 
+            $lockableFields = [
+                'respondent_name',
+                'respondent_contact_number',
+                'center_id',
+                'division_office',
+                'client_type',
+                'date_service_availed',
+                'sex',
+                'age',
+                'region_id',
+                'service_id',
+            ];
+
+            $sessionUpdates = [];
             if (! empty($webhookUrl)) {
-                $session->update(['webhook_url' => $webhookUrl]);
+                $sessionUpdates['webhook_url'] = $webhookUrl;
+            }
+            foreach ($lockableFields as $field) {
+                if ($session->isFieldLocked($field)) {
+                    $validated[$field] = $session->$field;
+                } elseif (isset($validated[$field])) {
+                    $sessionUpdates[$field] = $validated[$field];
+                }
+            }
+
+            if (! empty($sessionUpdates)) {
+                $session->update($sessionUpdates);
             }
         } else {
             $session = SurveySession::create([

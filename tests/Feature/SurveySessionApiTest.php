@@ -148,6 +148,10 @@ class SurveySessionApiTest extends TestCase
         $response->assertDontSee('type="hidden" name="center_id"', false);
         $response->assertDontSee('type="hidden" name="service_id"', false);
         $response->assertDontSee('type="hidden" name="respondent_name"', false);
+        $response->assertSee('name="respondent_name"', false);
+        $response->assertSee('name="respondent_contact_number"', false);
+        $response->assertDontSee('name=&quot;respondent_name&quot;', false);
+        $response->assertDontSee('name=&quot;respondent_contact_number&quot;', false);
         $response->assertSee('name="center_id" required', false);
         $response->assertSee('name="service_id" required', false);
         $response->assertDontSee('Pre-filled');
@@ -277,4 +281,48 @@ class SurveySessionApiTest extends TestCase
         $response->assertDontSee('Kiosk');
         $response->assertDontSee('⚠️');
     }
+
+    public function test_submitting_survey_with_unlocked_session_fields_updates_session_fields(): void
+    {
+        $service = Service::first();
+        $center = FormOption::where('category', 'center')->first();
+        $region = FormOption::where('category', 'region')->first();
+
+        $session = SurveySession::create([
+            'token' => 'unlocked-respondent-session',
+            'respondent_name' => null,
+            'respondent_contact_number' => null,
+            'center_id' => $center->id,
+            'region_id' => $region->id,
+            'service_id' => $service->id,
+            'status' => 'pending',
+            'expires_at' => now()->addDays(2),
+        ]);
+
+        $submissionData = $this->validSurveySubmissionData([
+            'session_token' => $session->token,
+            'respondent_name' => 'Newly Entered Name',
+            'respondent_contact_number' => '09998887777',
+            'center_id' => $center->id,
+            'region_id' => $region->id,
+            'service_id' => $service->id,
+        ]);
+
+        $response = $this->post(route('survey.store'), $submissionData);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('survey.confirmation'));
+
+        $this->assertDatabaseHas('survey_responses', [
+            'survey_session_id' => $session->id,
+            'respondent_name' => 'Newly Entered Name',
+            'respondent_contact_number' => '09998887777',
+        ]);
+
+        $session->refresh();
+        $this->assertEquals('completed', $session->status);
+        $this->assertEquals('Newly Entered Name', $session->respondent_name);
+        $this->assertEquals('09998887777', $session->respondent_contact_number);
+    }
 }
+

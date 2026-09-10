@@ -224,4 +224,27 @@ class SurveyValidationTest extends TestCase
         $response = $this->post(route('survey.store'), $data);
         $response->assertSessionHasErrors(['agreed_to_participate']);
     }
+
+    public function test_in_app_form_submission_without_session_records_respondent_name_and_contact(): void
+    {
+        $data = $this->validSurveyData([
+            'respondent_name' => 'Juan Dela Cruz',
+            'respondent_contact_number' => '09171234567',
+        ]);
+
+        $response = $this->post(route('survey.store'), $data);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('survey.confirmation'));
+
+        $this->assertDatabaseHas('survey_responses', [
+            'respondent_name' => 'Juan Dela Cruz',
+            'respondent_contact_number' => '09171234567',
+            'survey_session_id' => null,
+        ]);
+
+        $surveyResponse = SurveyResponse::latest('id')->first();
+        $this->assertNull($surveyResponse->survey_session_id);
+    }
 }
+
+

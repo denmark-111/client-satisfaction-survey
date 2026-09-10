@@ -105,8 +105,10 @@
                         <label class="form-label">Respondent Name</label>
                         @if($lockName)
                             <input type="hidden" name="respondent_name" value="{{ $session->respondent_name }}">
+                            <input type="text" value="{{ old('respondent_name', $session->respondent_name) }}" placeholder="Your answer" disabled>
+                        @else
+                            <input type="text" name="respondent_name" value="{{ old('respondent_name') }}" placeholder="Your answer">
                         @endif
-                        <input type="text" {{ $lockName ? '' : 'name="respondent_name"' }} value="{{ old('respondent_name', $session?->respondent_name) }}" placeholder="Your answer" {{ $lockName ? 'disabled' : '' }}>
                     </div>
 
                     @php($lockContact = $session && $session->isFieldLocked('respondent_contact_number'))
@@ -114,8 +116,10 @@
                         <label class="form-label">Respondent Contact Number</label>
                         @if($lockContact)
                             <input type="hidden" name="respondent_contact_number" value="{{ $session->respondent_contact_number }}">
+                            <input type="text" value="{{ old('respondent_contact_number', $session->respondent_contact_number) }}" placeholder="Your answer" disabled>
+                        @else
+                            <input type="text" name="respondent_contact_number" value="{{ old('respondent_contact_number') }}" placeholder="Your answer">
                         @endif
-                        <input type="text" {{ $lockContact ? '' : 'name="respondent_contact_number"' }} value="{{ old('respondent_contact_number', $session?->respondent_contact_number) }}" placeholder="Your answer" {{ $lockContact ? 'disabled' : '' }}>
                     </div>
                 </div>
             </div>

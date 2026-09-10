@@ -59,32 +59,39 @@ class SurveyController extends Controller
             $validated['cc3_helpfulness'] = null;
         }
 
+        $lockableFields = [
+            'respondent_name',
+            'respondent_contact_number',
+            'center_id',
+            'division_office',
+            'client_type',
+            'date_service_availed',
+            'sex',
+            'age',
+            'region_id',
+            'service_id',
+        ];
+
         $session = null;
         if (! empty($validated['session_token'])) {
             $session = SurveySession::where('token', $validated['session_token'])->first();
 
             if ($session && $session->isValid()) {
-                // Enforce verified session values for locked fields
-                $lockableFields = [
-                    'respondent_name',
-                    'respondent_contact_number',
-                    'center_id',
-                    'division_office',
-                    'client_type',
-                    'date_service_availed',
-                    'sex',
-                    'age',
-                    'region_id',
-                    'service_id',
-                ];
-
+                // Enforce verified session values for locked fields and sync un-locked fields
+                $sessionUpdates = [];
                 foreach ($lockableFields as $field) {
                     if ($session->isFieldLocked($field)) {
                         $validated[$field] = $session->$field;
+                    } elseif (isset($validated[$field])) {
+                        $sessionUpdates[$field] = $validated[$field];
                     }
                 }
 
                 $validated['survey_session_id'] = $session->id;
+
+                if (! empty($sessionUpdates)) {
+                    $session->update($sessionUpdates);
+                }
             }
         }
 
