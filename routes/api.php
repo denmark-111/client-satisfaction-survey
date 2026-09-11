@@ -16,8 +16,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/survey-sessions', [SurveySessionController::class, 'store'])->name('api.survey-sessions.store');
-Route::post('/survey-responses', [SurveyResponseController::class, 'store'])->name('api.survey-responses.store');
+Route::middleware('auth.client')->group(function () {
+    Route::post('/survey-sessions', [SurveySessionController::class, 'store'])->name('api.survey-sessions.store');
+    Route::post('/survey-responses', [SurveyResponseController::class, 'store'])->name('api.survey-responses.store');
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

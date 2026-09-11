@@ -14,10 +14,18 @@ class ApiSurveySubmissionTest extends TestCase
 {
     use RefreshDatabase;
 
+    private string $apiKey = 'css_test_dairy_loan_key_1234567890abcdef';
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed();
+    }
+
+    private function postSurveyApi(array $payload)
+    {
+        return $this->withHeaders(['X-API-Key' => $this->apiKey])
+            ->postJson(route('api.survey-responses.store'), $payload);
     }
 
     private function validSurveyData(array $overrides = []): array
@@ -62,7 +70,7 @@ class ApiSurveySubmissionTest extends TestCase
             'external_transaction_id' => 'TX-DIRECT-99',
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(201)
             ->assertJson([
@@ -108,7 +116,7 @@ class ApiSurveySubmissionTest extends TestCase
         $payload['region_code'] = $region->code;
         $payload['service_code'] = $service->code;
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(201)->assertJson(['success' => true]);
 
@@ -153,7 +161,7 @@ class ApiSurveySubmissionTest extends TestCase
             'age' => 19,
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(201)->assertJson(['success' => true]);
 
@@ -178,7 +186,7 @@ class ApiSurveySubmissionTest extends TestCase
             'session_token' => 'non-existent-token-xyz',
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['session_token']);
@@ -200,7 +208,7 @@ class ApiSurveySubmissionTest extends TestCase
             'session_token' => $session->token,
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(409)
             ->assertJson([
@@ -221,7 +229,7 @@ class ApiSurveySubmissionTest extends TestCase
             'session_token' => $session->token,
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(422)
             ->assertJson([
@@ -237,7 +245,7 @@ class ApiSurveySubmissionTest extends TestCase
             'remarks' => null,
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['remarks']);
@@ -252,7 +260,7 @@ class ApiSurveySubmissionTest extends TestCase
             'cc3_helpfulness' => 2,
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['cc2_visibility', 'cc3_helpfulness']);
 
@@ -263,7 +271,7 @@ class ApiSurveySubmissionTest extends TestCase
             'cc3_helpfulness' => null,
         ]);
 
-        $response2 = $this->postJson(route('api.survey-responses.store'), $payload2);
+        $response2 = $this->postSurveyApi($payload2);
         $response2->assertStatus(422)
             ->assertJsonValidationErrors(['cc2_visibility', 'cc3_helpfulness']);
     }
@@ -274,7 +282,7 @@ class ApiSurveySubmissionTest extends TestCase
             'date_service_availed' => Carbon::tomorrow()->format('Y-m-d'),
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->postSurveyApi($payload);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['date_service_availed']);

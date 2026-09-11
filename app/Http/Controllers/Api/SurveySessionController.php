@@ -41,9 +41,12 @@ class SurveySessionController extends Controller
         $expiresInHours = (int) ($validated['expires_in_hours'] ?? 168); // 7 days default
         $expiresAt = now()->addHours($expiresInHours);
 
+        $client = $request->attributes->get('client_service');
+        $clientSystem = $validated['client_system'] ?? ($client?->slug ?? null);
+
         $session = SurveySession::create([
             'token' => Str::random(64),
-            'client_system' => $validated['client_system'] ?? null,
+            'client_system' => $clientSystem,
             'external_transaction_id' => $validated['external_transaction_id'] ?? null,
             'respondent_name' => $validated['respondent_name'] ?? null,
             'respondent_contact_number' => $validated['respondent_contact_number'] ?? null,

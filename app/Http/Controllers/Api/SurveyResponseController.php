@@ -27,7 +27,8 @@ class SurveyResponseController extends Controller
         $validated['agreed_to_participate'] = true;
 
         $sessionToken = $validated['session_token'] ?? null;
-        $clientSystem = $validated['client_system'] ?? null;
+        $client = $request->attributes->get('client_service');
+        $clientSystem = $validated['client_system'] ?? ($client?->slug ?? null);
         $externalTransactionId = $validated['external_transaction_id'] ?? null;
         $webhookUrl = $validated['webhook_url'] ?? null;
 

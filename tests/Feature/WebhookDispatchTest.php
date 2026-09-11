@@ -17,6 +17,8 @@ class WebhookDispatchTest extends TestCase
 {
     use RefreshDatabase;
 
+    private string $apiKey = 'css_test_dairy_loan_key_1234567890abcdef';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -70,7 +72,8 @@ class WebhookDispatchTest extends TestCase
             'webhook_url' => 'https://client-portal.test/api/webhooks/survey',
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->withHeaders(['X-API-Key' => $this->apiKey])
+            ->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([
@@ -107,11 +110,12 @@ class WebhookDispatchTest extends TestCase
             'https://external-client.test/webhooks/callback' => Http::response(['ack' => true], 200),
         ]);
 
-        $sessionResponse = $this->postJson(route('api.survey-sessions.store'), [
-            'client_system' => 'dairy-loan-crm',
-            'external_transaction_id' => 'TX-CRM-501',
-            'webhook_url' => 'https://external-client.test/webhooks/callback',
-        ]);
+        $sessionResponse = $this->withHeaders(['X-API-Key' => $this->apiKey])
+            ->postJson(route('api.survey-sessions.store'), [
+                'client_system' => 'dairy-loan-crm',
+                'external_transaction_id' => 'TX-CRM-501',
+                'webhook_url' => 'https://external-client.test/webhooks/callback',
+            ]);
 
         $sessionResponse->assertStatus(201);
         $token = $sessionResponse->json('data.token');
@@ -120,7 +124,8 @@ class WebhookDispatchTest extends TestCase
             'session_token' => $token,
         ]);
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->withHeaders(['X-API-Key' => $this->apiKey])
+            ->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([
@@ -151,11 +156,12 @@ class WebhookDispatchTest extends TestCase
             'https://external-service.test/webhook' => Http::response(['status' => 'ok'], 200),
         ]);
 
-        $sessionResponse = $this->postJson(route('api.survey-sessions.store'), [
-            'client_system' => 'partner-agency',
-            'external_transaction_id' => 'TX-WEB-777',
-            'webhook_url' => 'https://external-service.test/webhook',
-        ]);
+        $sessionResponse = $this->withHeaders(['X-API-Key' => $this->apiKey])
+            ->postJson(route('api.survey-sessions.store'), [
+                'client_system' => 'partner-agency',
+                'external_transaction_id' => 'TX-WEB-777',
+                'webhook_url' => 'https://external-service.test/webhook',
+            ]);
 
         $sessionResponse->assertStatus(201);
         $token = $sessionResponse->json('data.token');
@@ -187,7 +193,8 @@ class WebhookDispatchTest extends TestCase
 
         $payload = $this->validSurveyData();
 
-        $response = $this->postJson(route('api.survey-responses.store'), $payload);
+        $response = $this->withHeaders(['X-API-Key' => $this->apiKey])
+            ->postJson(route('api.survey-responses.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJson([

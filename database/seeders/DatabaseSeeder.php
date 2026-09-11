@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             FormOptionSeeder::class,
             ServiceSeeder::class,
+            ApiClientSeeder::class,
         ]);
     }
 }

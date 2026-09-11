@@ -55,7 +55,9 @@ class SurveySessionApiTest extends TestCase
         ], $overrides);
     }
 
-    public function test_client_system_can_create_survey_session_without_auth_using_ids(): void
+    private string $apiKey = 'css_test_dairy_loan_key_1234567890abcdef';
+
+    public function test_client_system_can_create_survey_session_with_auth_using_ids(): void
     {
         $center = FormOption::where('category', 'center')->first();
         $region = FormOption::where('category', 'region')->first();
@@ -76,7 +78,9 @@ class SurveySessionApiTest extends TestCase
             'service_id' => $service->id,
         ];
 
-        $response = $this->postJson(route('api.survey-sessions.store'), $payload);
+        $response = $this->withHeaders([
+            'X-API-Key' => $this->apiKey,
+        ])->postJson(route('api.survey-sessions.store'), $payload);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -122,7 +126,9 @@ class SurveySessionApiTest extends TestCase
             'age' => 40,
         ];
 
-        $response = $this->postJson(route('api.survey-sessions.store'), $payload);
+        $response = $this->withHeaders([
+            'X-API-Key' => $this->apiKey,
+        ])->postJson(route('api.survey-sessions.store'), $payload);
 
         $response->assertStatus(201);
         $token = $response->json('data.token');
