@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth.client')->group(function () {
     Route::post('/survey-sessions', [SurveySessionController::class, 'store'])->name('api.survey-sessions.store');
+    Route::get('/survey-responses', [SurveyResponseController::class, 'index'])->name('api.survey-responses.index');
+    Route::get('/survey-responses/{id}', [SurveyResponseController::class, 'show'])->name('api.survey-responses.show');
     Route::post('/survey-responses', [SurveyResponseController::class, 'store'])->name('api.survey-responses.store');
 });
 

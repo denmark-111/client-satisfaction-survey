@@ -23,6 +23,7 @@ The application supports both **web portal survey submissions** and **API integr
 - [API Reference](#api-reference)
   - [1. Create Survey Session (Pre-filled URL)](#1-create-survey-session-pre-filled-url)
   - [2. Submit Survey Response Directly via API](#2-submit-survey-response-directly-via-api)
+  - [3. Retrieve Survey Responses via API](#3-retrieve-survey-responses-via-api)
   - [HTTP Status Codes & Error Handling](#http-status-codes--error-handling)
 - [Webhooks & Real-Time Notifications](#webhooks--real-time-notifications)
   - [Event & Headers](#event--headers)
@@ -403,6 +404,83 @@ curl -X POST http://localhost:8000/api/survey-responses \
     "external_transaction_id": null,
     "webhook_status": "queued"
   }
+}
+```
+
+---
+
+### 3. Retrieve Survey Responses via API
+
+Retrieves submitted survey responses formatted in the exact same schema and shape as the `POST /api/survey-responses` request body.
+
+- **URL:** `GET /api/survey-responses`
+- **Headers:**
+  - `X-API-Key: <your_api_key>` or `Authorization: Bearer <your_api_key>`
+
+#### Query Parameters:
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `session_token` | string | Optional | Filter by survey session token |
+| `client_system` | string | Optional | Filter by client system slug |
+| `external_transaction_id` | string | Optional | Filter by external transaction identifier |
+| `center_id` / `center_code` | int / string | Optional | Filter by operating center ID or code |
+| `region_id` / `region_code` | int / string | Optional | Filter by region ID or code |
+| `service_id` / `service_code` | int / string | Optional | Filter by service ID or code |
+| `client_type` | string | Optional | Filter by `Citizen`, `Business`, or `Government(Employee or Another Agency)` |
+| `date_service_availed` | string (YYYY-MM-DD) | Optional | Filter by exact service date availed |
+| `from_date` | string (YYYY-MM-DD) | Optional | Filter service date from (inclusive) |
+| `to_date` | string (YYYY-MM-DD) | Optional | Filter service date to (inclusive) |
+| `per_page` | integer | Optional | Enable pagination and specify items per page (e.g. `15`) |
+| `page` | integer | Optional | Page number when paginated |
+
+#### Example Request:
+```bash
+curl -X GET "http://localhost:8000/api/survey-responses?client_system=dairy-loan-portal" \
+  -H "X-API-Key: YOUR_API_KEY_HERE"
+```
+
+#### Example Response (`200 OK`):
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 15,
+      "session_token": "a8f192...",
+      "client_system": "dairy-loan-portal",
+      "external_transaction_id": "TX-100234",
+      "webhook_url": "https://external-system.example.com/api/css-webhook",
+      "agreed_to_participate": true,
+      "respondent_name": "Maria Santos",
+      "respondent_contact_number": "09181234567",
+      "center_id": 1,
+      "center_code": "CO",
+      "division_office": "Operations Division",
+      "client_type": "Citizen",
+      "date_service_availed": "2026-09-11",
+      "sex": "Female",
+      "age": 29,
+      "region_id": 15,
+      "region_code": "NCR",
+      "service_id": 1,
+      "service_code": "SRV-AB-NATURAL-HEAT",
+      "overall_satisfaction": 5,
+      "remarks": null,
+      "cc1_awareness": 1,
+      "cc2_visibility": 1,
+      "cc3_helpfulness": 1,
+      "sqd0_overall": 5,
+      "sqd1_responsiveness": 5,
+      "sqd2_reliability": 5,
+      "sqd3_access_facilities": 5,
+      "sqd4_communication": 5,
+      "sqd5_costs": 5,
+      "sqd6_integrity": 5,
+      "sqd7_assurance": 5,
+      "sqd8_outcome": 5
+    }
+  ]
 }
 ```
 

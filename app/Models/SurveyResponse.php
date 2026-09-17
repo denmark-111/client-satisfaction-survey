@@ -23,6 +23,15 @@ class SurveyResponse extends Model
         'cc1_awareness' => 'integer',
         'cc2_visibility' => 'integer',
         'cc3_helpfulness' => 'integer',
+        'sqd0_overall' => 'integer',
+        'sqd1_responsiveness' => 'integer',
+        'sqd2_reliability' => 'integer',
+        'sqd3_access_facilities' => 'integer',
+        'sqd4_communication' => 'integer',
+        'sqd5_costs' => 'integer',
+        'sqd6_integrity' => 'integer',
+        'sqd7_assurance' => 'integer',
+        'sqd8_outcome' => 'integer',
     ];
 
     public function session(): BelongsTo

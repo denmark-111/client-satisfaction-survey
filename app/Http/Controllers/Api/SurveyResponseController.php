@@ -4,14 +4,124 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\StoreSurveyResponseRequest;
+use App\Http\Resources\SurveyResponseResource;
 use App\Jobs\SendSurveyCompletedWebhook;
 use App\Models\SurveyResponse;
 use App\Models\SurveySession;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SurveyResponseController extends Controller
 {
+    /**
+     * List survey responses with optional filtering and pagination.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $query = SurveyResponse::with(['session', 'center', 'region', 'service']);
+
+        if ($request->filled('session_token')) {
+            $query->whereHas('session', fn ($q) => $q->where('token', $request->query('session_token')));
+        }
+
+        if ($request->filled('client_system')) {
+            $query->whereHas('session', fn ($q) => $q->where('client_system', $request->query('client_system')));
+        }
+
+        if ($request->filled('external_transaction_id')) {
+            $query->whereHas('session', fn ($q) => $q->where('external_transaction_id', $request->query('external_transaction_id')));
+        }
+
+        if ($request->filled('center_id')) {
+            $query->where('center_id', $request->query('center_id'));
+        }
+
+        if ($request->filled('center_code')) {
+            $query->whereHas('center', fn ($q) => $q->where('code', $request->query('center_code')));
+        }
+
+        if ($request->filled('region_id')) {
+            $query->where('region_id', $request->query('region_id'));
+        }
+
+        if ($request->filled('region_code')) {
+            $query->whereHas('region', fn ($q) => $q->where('code', $request->query('region_code')));
+        }
+
+        if ($request->filled('service_id')) {
+            $query->where('service_id', $request->query('service_id'));
+        }
+
+        if ($request->filled('service_code')) {
+            $query->whereHas('service', fn ($q) => $q->where('code', $request->query('service_code')));
+        }
+
+        if ($request->filled('client_type')) {
+            $query->where('client_type', $request->query('client_type'));
+        }
+
+        if ($request->filled('date_service_availed')) {
+            $query->whereDate('date_service_availed', $request->query('date_service_availed'));
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('date_service_availed', '>=', $request->query('from_date'));
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('date_service_availed', '<=', $request->query('to_date'));
+        }
+
+        $query->orderBy('id', 'desc');
+
+        if ($request->has('per_page') || $request->has('page')) {
+            $perPage = (int) $request->input('per_page', 15);
+            $paginator = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => SurveyResponseResource::collection($paginator->items()),
+                'pagination' => [
+                    'total' => $paginator->total(),
+                    'per_page' => $paginator->perPage(),
+                    'current_page' => $paginator->currentPage(),
+                    'last_page' => $paginator->lastPage(),
+                    'from' => $paginator->firstItem(),
+                    'to' => $paginator->lastItem(),
+                ],
+            ]);
+        }
+
+        $responses = $query->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => SurveyResponseResource::collection($responses),
+        ]);
+    }
+
+    /**
+     * Retrieve a specific survey response by ID.
+     */
+    public function show(int|string $id): JsonResponse
+    {
+        $response = SurveyResponse::with(['session', 'center', 'region', 'service'])
+            ->find($id);
+
+        if (! $response) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Survey response not found.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new SurveyResponseResource($response),
+        ]);
+    }
+
     /**
      * Submit a survey response directly via API.
      */
