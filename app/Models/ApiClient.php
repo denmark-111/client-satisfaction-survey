@@ -70,6 +70,68 @@ class ApiClient extends Model
     }
 
     /**
+     * Find an API client by its ID or slug identifier.
+     */
+    public static function findByIdentifier(string|int $identifier): ?self
+    {
+        if (is_numeric($identifier)) {
+            $client = self::find($identifier);
+            if ($client) {
+                return $client;
+            }
+        }
+
+        return self::where('slug', (string) $identifier)->first();
+    }
+
+    /**
+     * Rotate the API key for this client and return the new plain key.
+     */
+    public function rotateKey(?string $customKey = null): string
+    {
+        $payload = self::generateKeyPayload($customKey);
+
+        $this->update([
+            'api_key_hash' => $payload['hash'],
+            'key_prefix' => $payload['prefix'],
+        ]);
+
+        return $payload['plain_key'];
+    }
+
+    /**
+     * Revoke / deactivate this client.
+     */
+    public function revoke(): bool
+    {
+        return (bool) $this->update(['is_active' => false]);
+    }
+
+    /**
+     * Activate / reactivate this client.
+     */
+    public function activate(): bool
+    {
+        return (bool) $this->update(['is_active' => true]);
+    }
+
+    /**
+     * Scope a query to only include active clients.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope a query to only include revoked / inactive clients.
+     */
+    public function scopeRevoked($query)
+    {
+        return $query->where('is_active', false);
+    }
+
+    /**
      * Record last usage timestamp.
      */
     public function recordUsage(): void
