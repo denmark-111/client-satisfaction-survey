@@ -17,9 +17,13 @@ The application supports both **web portal survey submissions** and **API integr
 - [Installation & Local Setup](#installation--local-setup)
 - [API Keys & Client Service Management](#api-keys--client-service-management)
   - [Security Architecture](#security-architecture)
-  - [Generating API Keys via Artisan Command](#generating-api-keys-via-artisan-command)
+  - [Artisan Management Commands](#artisan-management-commands)
+    - [1. Register Client & Generate Key (`client:create`)](#1-register-client--generate-key-clientcreate)
+    - [2. List Registered Clients (`client:list`)](#2-list-registered-clients-clientlist)
+    - [3. Revoke Client Access (`client:revoke`)](#3-revoke-client-access-clientrevoke)
+    - [4. Reactivate Client Access (`client:activate`)](#4-reactivate-client-access-clientactivate)
+    - [5. Rotate API Key (`client:rotate`)](#5-rotate-api-key-clientrotate)
   - [Authenticating API Requests](#authenticating-api-requests)
-  - [Managing and Revoking Keys](#managing-and-revoking-keys)
 - [API Reference](#api-reference)
   - [1. Create Survey Session (Pre-filled URL)](#1-create-survey-session-pre-filled-url)
   - [2. Submit Survey Response Directly via API](#2-submit-survey-response-directly-via-api)
@@ -197,39 +201,112 @@ External services interacting with the survey API must provide a valid API key.
 
 ---
 
-### Generating API Keys via Artisan Command
+### Artisan Management Commands
 
-The project includes an Artisan CLI command `client:create` (`App\Console\Commands\CreateApiClientCommand`) to register client services and generate keys.
+The system provides dedicated Artisan CLI commands for the complete lifecycle management of API client services and credentials.
 
-#### 1. Generate an Auto-Generated Key
-To register a new service with a randomly generated 48-character live key:
+#### 1. Register Client & Generate Key (`client:create`)
+Register a new client service and generate an initial API key:
 ```bash
-php artisan client:create "Client Service Name"
+php artisan client:create "Dairy Loan Portal"
+```
+
+**Optional Options:**
+- `--slug=<custom-slug>`: Set a custom slug identifier (defaults to kebab-cased name).
+- `--key=<custom-key>`: Supply a specific predetermined plain API key.
+
+```bash
+php artisan client:create "Dairy Loan Portal" --slug=dairy-loan --key="css_custom_key_12345"
 ```
 
 **Output:**
 ```
-Client service [Client Service Name] registered successfully!
+Client service [Dairy Loan Portal] registered successfully!
 
-+----+---------------------+---------------------+--------------+--------+
-| ID | Name                | Slug                | Key Prefix   | Status |
-+----+---------------------+---------------------+--------------+--------+
-| 1  | Client Service Name | client-service-name | css_live_... | Active |
-+----+---------------------+---------------------+--------------+--------+
++----+-------------------+------------+--------------+--------+
+| ID | Name              | Slug       | Key Prefix   | Status |
++----+-------------------+------------+--------------+--------+
+| 1  | Dairy Loan Portal | dairy-loan | css_live_... | Active |
++----+-------------------+------------+--------------+--------+
 
 SAVE THIS API KEY NOW. It will not be shown again in plain text:
-<YOUR_GENERATED_PLAIN_API_KEY>
+css_live_a1b2c3d4e5f6...
 ```
 
-#### 2. Specify a Custom Slug
+---
+
+#### 2. List Registered Clients (`client:list`)
+View all registered clients, their status, key prefixes, and activity:
 ```bash
-php artisan client:create "Client Service Name" --slug=client-service
+# List all clients
+php artisan client:list
+
+# Filter by active clients only
+php artisan client:list --active
+
+# Filter by revoked / inactive clients only
+php artisan client:list --revoked
 ```
 
-#### 3. Assign a Specific Plain API Key
-If you need to assign a predetermined key:
+**Output:**
+```
++----+-------------------+--------------------+--------------+----------+---------------------+---------------------+
+| ID | Name              | Slug               | Key Prefix   | Status   | Last Used At        | Created At          |
++----+-------------------+--------------------+--------------+----------+---------------------+---------------------+
+| 1  | Dairy Loan System | dairy-loan-system  | css_live_... | Active   | 2026-09-21 14:00:00 | 2026-09-11 08:30:00 |
+| 2  | Herd Management   | herd-management    | css_live_... | Inactive | Never               | 2026-09-11 08:30:00 |
++----+-------------------+--------------------+--------------+----------+---------------------+---------------------+
+```
+
+---
+
+#### 3. Revoke Client Access (`client:revoke`)
+Immediately deactivate an API client. Subsequent requests using that client's key are rejected with `403 Forbidden`:
 ```bash
-php artisan client:create "Client Service Name" --slug=client-service --key="<your_custom_api_key>"
+# Revoke by slug or numeric ID (with confirmation prompt)
+php artisan client:revoke dairy-loan-system
+
+# Revoke without interactive confirmation
+php artisan client:revoke dairy-loan-system --force
+```
+
+---
+
+#### 4. Reactivate Client Access (`client:activate`)
+Re-enable access for a previously revoked or inactive API client:
+```bash
+php artisan client:activate dairy-loan-system
+```
+
+---
+
+#### 5. Rotate API Key (`client:rotate`)
+Generate a new API key for an existing client while **immediately invalidating the previous key**:
+```bash
+# Rotate key (with confirmation prompt)
+php artisan client:rotate dairy-loan-system
+
+# Rotate key without interactive confirmation
+php artisan client:rotate dairy-loan-system --force
+
+# Rotate with a specific replacement key
+php artisan client:rotate dairy-loan-system --key="css_new_key_12345" --force
+```
+
+**Output:**
+```
+API key for client [Dairy Loan System] rotated successfully!
+
++----+-------------------+-------------------+-----------------+--------+
+| ID | Name              | Slug              | New Key Prefix  | Status |
++----+-------------------+-------------------+-----------------+--------+
+| 1  | Dairy Loan System | dairy-loan-system | css_live_...    | Active |
++----+-------------------+-------------------+-----------------+--------+
+
+SAVE THIS NEW API KEY NOW. It will not be shown again in plain text:
+css_live_9z8y7x6w5v4u...
+
+Notice: The previous API key for this client has been permanently invalidated.
 ```
 
 ---
@@ -248,12 +325,8 @@ X-API-Key: <your_api_key>
 Authorization: Bearer <your_api_key>
 ```
 
----
-
-### Managing and Revoking Keys
-
-- **Revoke / Deactivate Access:** Update the `is_active` column in the `api_clients` table to `false` (`0`). Requests with that key will immediately return `403 Forbidden`.
-- **Track Usage:** The system automatically updates the `last_used_at` timestamp in `api_clients` on every successful authenticated request.
+> [!NOTE]
+> The system automatically updates the `last_used_at` timestamp in `api_clients` on every successful authenticated request.
 
 ---
 
@@ -647,7 +720,11 @@ client-satisfaction-survey/
 ├── app/
 │   ├── Console/
 │   │   └── Commands/
-│   │       └── CreateApiClientCommand.php   # 'php artisan client:create'
+│   │       ├── ActivateApiClientCommand.php # 'php artisan client:activate'
+│   │       ├── CreateApiClientCommand.php   # 'php artisan client:create'
+│   │       ├── ListApiClientsCommand.php    # 'php artisan client:list'
+│   │       ├── RevokeApiClientCommand.php   # 'php artisan client:revoke'
+│   │       └── RotateApiClientCommand.php   # 'php artisan client:rotate'
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Api/
